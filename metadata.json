@@ -1,0 +1,14 @@
+{
+  "name": "twc-logstash",
+  "version": "0.1.0",
+  "author": "Tom Miller",
+  "summary": "Install and configure logstash.",
+  "license": "Apache 2.0",
+  "source": "https://bfd-github.os.cloud.twc.net/tmiller/twc-logstash.git",
+  "project_page": "https://bfd-github.os.cloud.twc.net/tmiller/twc-logstash",
+  "issues_url": "https://bfd-github.os.cloud.twc.net/tmiller/twc-logstash/issues",
+  "dependencies": [
+    {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"}
+  ]
+}
+
