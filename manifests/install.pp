@@ -5,6 +5,7 @@ class twc_logstash::install (
   class { 'logstash':
     package_url => $logstash_package_url,
     java_install => true,
+  }
 
   include twc_logstash::config
 }
