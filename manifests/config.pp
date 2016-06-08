@@ -1,4 +1,4 @@
-class twc-logstash::config ()
+class twc_logstash::config ()
 {
   logstash::configfile { 'input_syslog':
     source => "puppet:///modules/twc-logstash/input-syslog.conf",
