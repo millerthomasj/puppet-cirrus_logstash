@@ -1,4 +1,4 @@
-class twc_logstash::install (
+class cirrus_logstash::install (
   $logstash_package_url = 'https://download.elastic.co/logstash/logstash/packages/debian/logstash_2.3.2-1_all.deb',
 )
 {
@@ -7,5 +7,5 @@ class twc_logstash::install (
     java_install => true,
   }
 
-  include twc_logstash::config
+  include cirrus_logstash::config
 }

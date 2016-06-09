@@ -1,6 +1,6 @@
 {
-  "name": "twc-logstash",
-  "version": "0.1.0",
+  "name": "cirrus_logstash",
+  "version": "1.0.1",
   "author": "Tom Miller",
   "summary": "Install and configure logstash.",
   "license": "Apache 2.0",
