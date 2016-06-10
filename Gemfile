@@ -1,7 +1,22 @@
+
 source 'https://rubygems.org'
 
-puppetversion = ENV.key?('PUPPET_VERSION') ? "= #{ENV['PUPPET_VERSION']}" : ['>= 3.3']
-gem 'puppet', puppetversion
-gem 'puppetlabs_spec_helper', '>= 0.1.0'
-gem 'puppet-lint', '>= 0.3.2'
-gem 'facter', '>= 1.7.0'
+gem 'puppetlabs_spec_helper', :require => false
+gem 'rspec-puppet', '~> 2.3.0', :require => false
+
+gem 'puppet-lint-absolute_classname-check'
+gem 'puppet-lint-absolute_template_path'
+gem 'puppet-lint-trailing_newline-check'
+
+gem 'puppet-lint-variable_contains_upcase'
+gem 'puppet-lint-leading_zero-check'
+gem 'puppet-lint-numericvariable'
+gem 'puppet-lint-unquoted_string-check'
+
+if puppetversion = ENV['PUPPET_GEM_VERSION']
+          gem 'puppet', puppetversion, :require => false
+else
+          gem 'puppet', :require => false
+end
+
+# vim:ft=ruby

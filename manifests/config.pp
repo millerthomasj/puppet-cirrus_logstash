@@ -11,7 +11,7 @@ class cirrus_logstash::config ()
   }
 
   logstash::configfile { 'output_es':
-    source => "puppet:///modules/cirrus_logstash/output-es.conf",
+    template => "cirrus_logstash/output-es.conf.erb",
     order   => 90,
   }
 }

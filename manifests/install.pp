@@ -7,5 +7,7 @@ class cirrus_logstash::install (
     java_install => true,
   }
 
+  logstash::plugin { 'logstash-input-beats': }
+
   include cirrus_logstash::config
 }
