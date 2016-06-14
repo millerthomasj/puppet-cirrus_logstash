@@ -1,5 +1,7 @@
 class cirrus_logstash::config
 {
+  notify { "Output for \$syslog_port is ${syslog_port}." }
+
   logstash::configfile { 'input_syslog':
     template => "cirrus_logstash/input-syslog.conf.erb",
     order  => 2,
