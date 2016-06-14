@@ -1,5 +1,5 @@
 input {
   beats {
-   port => <%=@filebeat_port%>
+   port => <%=scope.lookupvar('filebeat_port')%>
   }
 }
