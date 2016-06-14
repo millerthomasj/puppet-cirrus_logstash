@@ -1,13 +1,13 @@
 class cirrus_logstash::config ()
 {
   logstash::configfile { 'input_syslog':
-    source => "puppet://modules/cirrus_logstash/input-syslog.conf",
-    order    => 2,
+    source => "puppet:///modules/cirrus_logstash/input-syslog.conf",
+    order  => 2,
   }
 
   logstash::configfile { 'input_filebeat':
-    source => "puppet://modules/cirrus_logstash/input-filebeat.conf",
-    order    => 3,
+    source => "puppet:///modules/cirrus_logstash/input-filebeat.conf",
+    order  => 3,
   }
 
   logstash::configfile { 'filter_apache':
