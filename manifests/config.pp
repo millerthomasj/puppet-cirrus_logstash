@@ -6,7 +6,7 @@ class cirrus_logstash::config
   }
 
   logstash::configfile { 'input_filebeat':
-    source => "puppet:///modules/cirrus_logstash/input-filebeat.conf",
+    template => "cirrus_logstash/input-filebeat.conf.erb",
     order  => 3,
   }
 
