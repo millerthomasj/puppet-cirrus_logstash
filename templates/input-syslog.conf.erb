@@ -1,10 +1,10 @@
 input {
   tcp {
    type => syslog
-   port => <%= @syslog_port %>
+   port => <%=@syslog_port%>
   }
   udp {
    type => syslog
-   port => <%= @syslog_port %>
+   port => <%=@syslog_port%>
   }
 }

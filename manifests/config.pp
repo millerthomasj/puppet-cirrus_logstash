@@ -1,7 +1,7 @@
 class cirrus_logstash::config ()
 {
-  $syslog_port = 5000,
-  $filebeat_port = 5044,
+  $syslog_port = 5000
+  $filebeat_port = 5044
 
   logstash::configfile { 'input_syslog':
     template => "cirrus_logstash/input-syslog.conf.erb",
