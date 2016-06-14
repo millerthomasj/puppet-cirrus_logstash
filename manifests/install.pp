@@ -10,8 +10,5 @@ class cirrus_logstash::install (
 
   logstash::plugin { 'logstash-input-beats': }
 
-  class { 'cirrus_logstash::config':
-    syslog_port   => $syslog_port,
-    filebeat_port => $filebeat_port,
-  }
+  include cirrus_logstash::config:
 }
