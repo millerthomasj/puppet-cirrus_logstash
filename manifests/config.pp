@@ -4,11 +4,13 @@ class cirrus_logstash::config ()
   $filebeat_port = 5044
 
   logstash::configfile { 'input_syslog':
+    syslog_port => $syslog_port,
     template => "cirrus_logstash/input-syslog.conf.erb",
     order    => 2,
   }
 
   logstash::configfile { 'input_filebeat':
+    filebeat_port => $filebeat_port,
     template => "cirrus_logstash/input-filebeat.conf.erb",
     order    => 3,
   }
