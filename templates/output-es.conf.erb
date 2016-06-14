@@ -4,6 +4,15 @@ output {
     sniffing => true
     manage_template => false
   }
+
+  <% if scope.lookupvar('cirrus_logstash::cross_site_enabled') %>
+  elasticsearch { 
+    hosts => ["<%=scope.lookupvar('cirrus_logstash::cross_site_elasticsearch')%>:9200"] 
+    sniffing => true
+    manage_template => false
+  }
+  <% end %>
+
   # Uncomment the following to enable debug logging to /var/log/logstash/logstash.stdout
   #stdout { codec => rubydebug }
 }

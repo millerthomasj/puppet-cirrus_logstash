@@ -1,0 +1,5 @@
+input {
+  beats {
+   port => <%= scope.lookupvar('cirrus_logstash::filebeat_port') %>
+  }
+}
