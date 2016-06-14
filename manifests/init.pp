@@ -1,3 +1,27 @@
+# == Class cirrus_logstash
+#
+# Includes the logstash class from the elasticsearch/logstash module.
+#
+# === Variables
+#
+# [*$logstash_package_url*]
+#   This is what controls the version of logstash to install, this version must be compatible with the
+#   version of elasticsearch that is running.
+#
+# === Hiera variables
+# [* cirrus_logstash::syslog_port *]
+#   The port that all logstash nodes should accept syslog traffic on.
+#
+# [* cirrus_logstash::filebeat_port *]
+#   The port that all logstash nodes should accept beats traffic on.
+#
+# [* cirrus_logstash::cross_site_enabled *]
+#   This will tell this module whether or not to ship logs between the NCE and NCW sites (true or false).
+#
+# [* cirrus_logstash::cross_site_elasticsearch *]
+#   This value should be either the DNS name or the IP address of a client node in a cross site elasticsearch cluster.
+#
+
 class cirrus_logstash (
   $logstash_package_url = 'https://download.elastic.co/logstash/logstash/packages/debian/logstash_2.3.2-1_all.deb',
   $syslog_port = $cirrus_logstash::params::syslog_port,
