@@ -1,8 +1,15 @@
 class cirrus_logstash::config ()
+  $syslog_port = '5000',
+  $filebeat_port = '5044',
 {
   logstash::configfile { 'input_syslog':
-    source => "puppet:///modules/cirrus_logstash/input-syslog.conf",
+    template => "cirrus_logstash/input-syslog.conf.erb"
     order    => 2,
+  }
+
+  logstash::configfile { 'input_filebeat':
+    template => "cirrus_logstash/input-filebeat.conf.erb"
+    order    => 3,
   }
 
   logstash::configfile { 'filter_apache':

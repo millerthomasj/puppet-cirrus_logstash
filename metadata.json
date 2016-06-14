@@ -1,6 +1,6 @@
 {
   "name": "cirrus_logstash",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": "Tom Miller",
   "summary": "Install and configure logstash.",
   "license": "Apache 2.0",
