@@ -1,7 +1,7 @@
-class cirrus_logstash::config ()
+class cirrus_logstash::config
 {
   logstash::configfile { 'input_syslog':
-    source => "puppet:///modules/cirrus_logstash/input-syslog.conf",
+    template => "cirrus_logstash/input-syslog.conf.erb",
     order  => 2,
   }
 
