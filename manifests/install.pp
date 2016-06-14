@@ -1,7 +1,7 @@
 class cirrus_logstash::install (
   $logstash_package_url = 'https://download.elastic.co/logstash/logstash/packages/debian/logstash_2.3.2-1_all.deb',
-  $syslog_port = 5000,
-  $filebeat_port = 5044,
+  $syslog_port = '5000',
+  $filebeat_port = '5044',
 )
 {
   class { 'logstash':
