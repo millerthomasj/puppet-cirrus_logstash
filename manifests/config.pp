@@ -4,12 +4,12 @@ class cirrus_logstash::config (
 )
 {
   logstash::configfile { 'input_syslog':
-    template => "cirrus_logstash/input-syslog.conf.erb"
+    template => "cirrus_logstash/input-syslog.conf.erb",
     order    => 2,
   }
 
   logstash::configfile { 'input_filebeat':
-    template => "cirrus_logstash/input-filebeat.conf.erb"
+    template => "cirrus_logstash/input-filebeat.conf.erb",
     order    => 3,
   }
 
