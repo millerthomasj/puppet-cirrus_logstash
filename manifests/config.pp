@@ -1,6 +1,9 @@
 class cirrus_logstash::config
 {
-  vcsrepo { $logstash::params::installpath:
+  $filter_dir = "${logstash::params::installpath}/logstash_filters"
+  $filter_name = "openstack-filters.conf"
+
+  vcsrepo { $filter_dir:
     ensure     => latest,
     provider   => git,
     source     => $cirrus_logstash::openstack_filters_repo,
@@ -17,9 +20,15 @@ class cirrus_logstash::config
     order  => 3,
   }
 
-  logstash::configfile { 'filter_apache':
+  logstash::configfile { 'filter_syslog':
     source => "puppet:///modules/cirrus_logstash/filter-syslog.conf",
     order  => 20,
+  }
+
+  logstash::configfile { 'filter_openstack':
+    source => "file:///${filter_dir}/filters/${filter_name}",
+    order  => 30,
+    require => Vcsrepo[$filter_dir],
   }
 
   logstash::configfile { 'output_es':
