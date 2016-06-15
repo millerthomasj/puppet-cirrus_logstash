@@ -21,13 +21,17 @@
 # [* cirrus_logstash::cross_site_elasticsearch *]
 #   This value should be either the DNS name or the IP address of a client node in a cross site elasticsearch cluster.
 #
+# [* cirrus_logstash::openstack_filters_repo *]
+#   This value is the repo maintained by the openstack community to support logstash filters for openstack.
+#
 
 class cirrus_logstash (
-  $logstash_package_url = 'https://download.elastic.co/logstash/logstash/packages/debian/logstash_2.3.2-1_all.deb',
+  $logstash_package_url = $cirrus_logstash::params::logstash_package_url,
   $syslog_port = $cirrus_logstash::params::syslog_port,
   $filebeat_port = $cirrus_logstash::params::filebeat_port,
   $cross_site_enabled = $cirrus_logstash::params::cross_site_enabled,
   $cross_site_elasticsearch = undef,
+  $openstack_filters_repo = $cirrus_logstash::params::openstack_filters_repo,
 ) inherits cirrus_logstash::params
 {
   if ( $cross_site_enabled ) {

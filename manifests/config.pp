@@ -1,5 +1,12 @@
 class cirrus_logstash::config
 {
+  vcsrepo { $logstash::params::installpath:
+    ensure     => latest,
+    provider   => git,
+    source     => $cirrus_logstash::openstack_filters_repo,
+    revision   => 'master',
+  }
+
   logstash::configfile { 'input_syslog':
     template => "cirrus_logstash/input-syslog.conf.erb",
     order  => 2,
