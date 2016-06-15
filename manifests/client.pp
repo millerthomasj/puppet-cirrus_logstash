@@ -37,6 +37,16 @@ class cirrus_logstash::client (
 {
   if $filebeat_enabled {
     class { 'filebeat':
+      logging     => {
+        'level'     => 'info',
+        'to_files'  => true,
+        'to_syslog' => false,
+        'files'     => {
+          'keepfiles' => 3,
+          'name'      => 'filebeat.log',
+          'path'      => '/var/log/beats',
+        },
+      },
       #Set manage_repo to 'false' as we mirror the 'beats' repo with blobmaster & blobmirror
       manage_repo => false,
       outputs     => {
