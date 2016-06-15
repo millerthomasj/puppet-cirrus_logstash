@@ -8,4 +8,7 @@ class cirrus_logstash::params ()
   $cross_site_enabled = false
 
   $openstack_filters_repo = 'https://git.openstack.org/openstack-infra/logstash-filters'
+  $openstack_filters_commit = 'd33c95310dea7bfcf2d985f2dc80de54c0a9f118'
+  $openstack_filters_dir = "${logstash::params::installpath}/logstash_filters"
+  $openstack_filters_allow_debug = false
 }
