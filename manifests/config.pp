@@ -16,7 +16,7 @@ class cirrus_logstash::config
   }
 
   logstash::configfile { 'filter_openstack':
-    source => "file:///${openstack_filters_dir}/filters/openstack-filters.conf",
+    source => "file:///${cirrus_logstash::openstack_filters_dir}/filters/openstack-filters.conf",
     order  => 30,
   }
 
