@@ -22,6 +22,24 @@ Once logstash is installed we will need to manage logstash endpoints.
 Inputs will generally be from the beats protocol, this is handled by the beats input plugin which
 is installed by default. We can also except traffic from any rsyslog client on port 5000.
 
+```javascript
+input {
+  tcp {
+   type => syslog
+   port => 5000
+  }
+  udp {
+   type => syslog
+   port => 5000
+  }
+}
+input {
+  beats {
+   port => 5044
+  }
+}
+```
+
 ### Filters
 Filters will be created as needed and provided by the Openstack community, below is an example of
 a simple rsyslog filter:
@@ -49,7 +67,7 @@ filter {
 In most cases outputs for logstash will be elasticsearch. Since all logstash hosts are also
 elasticsearch clients we can send most outputs to localhost.
 
-<code>
+```javascript
 output {
   elasticsearch { 
     hosts => ["localhost:9200"] 
@@ -57,4 +75,4 @@ output {
     manage_template => false
   }
 }
-</code>
+```
