@@ -26,7 +26,7 @@ is installed by default. We can also except traffic from any rsyslog client on p
 Filters will be created as needed and provided by the Openstack community, below is an example of
 a simple rsyslog filter:
 
-<code>
+```javascript
 filter {
   if [type] == "syslog" {
     grok {
@@ -43,7 +43,7 @@ filter {
     }
   }
 }
-</code>
+```
 
 ### Outputs
 In most cases outputs for logstash will be elasticsearch. Since all logstash hosts are also
