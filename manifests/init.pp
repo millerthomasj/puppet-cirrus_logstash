@@ -60,6 +60,5 @@ class cirrus_logstash (
 
   logstash::plugin { 'logstash-input-beats': }
 
-#  include cirrus_logstash::filters
   include cirrus_logstash::config
 }
