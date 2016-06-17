@@ -15,10 +15,10 @@ class cirrus_logstash::config
     order  => 20,
   }
 
-#  logstash::configfile { 'filter_openstack':
-#    source => "file:///${cirrus_logstash::openstack_filters_dir}/filters/openstack-filters.conf",
-#    order  => 30,
-#  }
+  logstash::configfile { 'filter_nova':
+    source => "puppet:///modules/cirrus_logstash/filter-nova.conf",
+    order  => 30,
+  }
 
   logstash::configfile { 'output_es':
     template => "cirrus_logstash/output-es.conf.erb",
