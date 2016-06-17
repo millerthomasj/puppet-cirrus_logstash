@@ -22,14 +22,18 @@
 #   further down the ELK data pipeline. Filebeat ONLY sets metadata at the Prospector (vice
 #   Harvester) level.
 #   In Hiera, specify filebeat_prospectors as an array of hashes. We merge the arrays from
-#   the entier hierarchy, then create a Prospector per hash. At a minimum, each hash should
-#   specify "paths" (array) and "doc_type" (string). Globs "*" are supported in "paths", but all
-#   files matching the glob will be treated the same by Filebeat --> ELK. DO NOT use globs for
-#   log files with even slightly different formats. HERE BE DRAGONS...
-#   The "doc_type" is used for filtering in Logstash, so the "doc_type" you reference should
-#   exist in a Logstash filter template.
-#   !! If you want to add custom metadata to all events from a given log file, add the metadata
-#   within a "fields" hash nested under the corresponding filebeat_prospectors hash. !!
+#   the entire hierarchy, then create a Prospector per hash. At a minimum, each hash should
+#   specify "paths" (array) and "fields" (hash).
+#
+#   Globs "*" are supported in "paths", but all files matching the glob will be treated the same
+#   by Filebeat -> Logstash -> Elasticsearch -> Kibana. 
+#   DO NOT use globs for log files with even slightly different formats. HERE BE DRAGONS...
+#
+#   Logstash uses keys:values from the "fields" hash for filtering & converting input log messages
+#   to a useful, consistent document structure in Elasticsearch. In particular, Logstash filters
+#   on "tags"; include a "tags" key within the "fields" hash, where the value for the "tags" key
+#   is an array of tags. Any other keys:values in the "fields" hash will become searchable fields
+#   in Elasticsearch. This allows you to add custom metadata for all events from a given log file.
 #
 
 class cirrus_logstash::client (
@@ -51,7 +55,7 @@ class cirrus_logstash::client (
           'path'      => '/var/log/beats',
         },
       },
-      #Set manage_repo to 'false' as we mirror the 'beats' repo with blobmaster & blobmirror
+      #Set manage_repo to 'false' as we mirror the 'beats' repo with blobmaster & blobmirror.
       manage_repo => false,
       outputs     => {
         'logstash' => {
@@ -78,10 +82,9 @@ class cirrus_logstash::client (
       max_bytes         => 10485760,
       multiline         => {},
     }
-    #Set $filebeat_prospectors to an array of hashes in Hiera, where each hash is input to filebeat::prospector
+    #Set $filebeat_prospectors to an array of hashes in Hiera.
+    #Each hash is used as input to the filebeat::prospector define.
     validate_array($filebeat_prospectors)
-    #Create a Filebeat Prospector for each hash in filebeat_prospectors array
-    #This lets us specify the "type" for each monitored file, which is useful in Logstash filtering
     create_resources('filebeat::prospector', $filebeat_prospectors, $filebeat_prospectors_defaults)
     ###
 
