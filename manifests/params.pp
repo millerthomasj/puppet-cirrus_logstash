@@ -9,6 +9,6 @@ class cirrus_logstash::params ()
 
   $openstack_filters_repo = 'https://git.openstack.org/openstack-infra/logstash-filters'
   $openstack_filters_commit = 'd33c95310dea7bfcf2d985f2dc80de54c0a9f118'
-  $openstack_filters_dir = "/opt/logstash/logstash_filters"
+  $openstack_filters_dir = '/opt/logstash/logstash_filters'
   $openstack_filters_allow_debug = true
 }

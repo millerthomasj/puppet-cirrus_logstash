@@ -62,12 +62,12 @@
 class cirrus_logstash::client (
   $filebeat_enabled     = false,
   $filebeat_prospectors = hiera_hash('filebeat_prospectors', {}),
-  $logstash_hosts       = ["${cirrus_site_iteration}-logstash-001.${domain}","${cirrus_site_iteration}-logstash-002.${domain}"],
+  $logstash_hosts       = ["${::cirrus_site_iteration}-logstash-001.${::domain}","${::cirrus_site_iteration}-logstash-002.${::domain}"],
 )
 {
   if $filebeat_enabled {
-    class { 'filebeat':
-      logging           => {
+    class { '::filebeat':
+      logging     => {
         'level'     => 'info',
         'to_files'  => true,
         'to_syslog' => false,
@@ -78,8 +78,8 @@ class cirrus_logstash::client (
         },
       },
       #Set manage_repo to 'false' as we mirror the 'beats' repo with blobmaster & blobmirror.
-      manage_repo       => false,
-      outputs           => {
+      manage_repo => false,
+      outputs     => {
         'logstash' => {
           'hosts'       => $logstash_hosts,
           'loadbalance' => true,

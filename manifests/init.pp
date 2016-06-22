@@ -49,16 +49,16 @@ class cirrus_logstash (
 {
   if ( $cross_site_enabled ) {
     if ( $cross_site_elasticsearch == undef ) {
-      fail("The cross_site_elasticsearch variable must be set with a valid hostname or IP.")
+      fail('The cross_site_elasticsearch variable must be set with a valid hostname or IP.')
     }
   }
 
-  class { 'logstash':
-    package_url => $logstash_package_url,
+  class { '::logstash':
+    package_url  => $logstash_package_url,
     java_install => true,
   }
 
   logstash::plugin { 'logstash-input-beats': }
 
-  include cirrus_logstash::config
+  include ::cirrus_logstash::config
 }
