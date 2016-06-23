@@ -66,6 +66,9 @@ class cirrus_logstash::client (
 )
 {
   if $filebeat_enabled {
+    #Include the apt repo for 'beats', so clients can download the filebeat*.deb package
+    include ::cirrus::repo::beats
+
     class { '::filebeat':
       logging     => {
         'level'     => 'info',
