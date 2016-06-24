@@ -1,16 +1,21 @@
 output {
-  elasticsearch { 
-    hosts => ["<%=scope.lookupvar('ipaddress')%>:9200"] 
-    sniffing => true
-    manage_template => false
+  if "_grokparsefailure" in [tags] {
+    file { path => "/var/log/logstash/failed_events-%{+YYYY-MM-dd}" }
   }
-  <% if scope.lookupvar('cirrus_logstash::cross_site_enabled') == true %>
-  elasticsearch { 
-    hosts => ["<%=scope.lookupvar('cirrus_logstash::cross_site_elasticsearch')%>:9200"] 
-    sniffing => true
-    manage_template => false
+  else {
+    elasticsearch {
+      hosts => ["<%=scope.lookupvar('ipaddress')%>:9200"]
+      sniffing => true
+      manage_template => true
+    }
+    <% if scope.lookupvar('cirrus_logstash::cross_site_enabled') == true %>
+    elasticsearch {
+      hosts => ["<%=scope.lookupvar('cirrus_logstash::cross_site_elasticsearch')%>:9200"]
+      sniffing => true
+      manage_template => true
+    }
+    <% end %>
+    # Uncomment the following to enable debug logging to /var/log/logstash/logstash.stdout
+    #stdout { codec => rubydebug }
   }
-  <% end %>
-  # Uncomment the following to enable debug logging to /var/log/logstash/logstash.stdout
-  #stdout { codec => rubydebug }
 }

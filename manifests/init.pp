@@ -32,7 +32,10 @@
 #   The directory to download the openstack community filters to.
 #
 # [* cirrus_logstash::openstack_filters_allow_debug *]
-#   Set this value to true if we do not want to drop DEBUG tagged messages through logstash filters.
+#   Set this value to true if we do not want to drop DEBUG tagged messages through logstash openstack filters.
+#
+# [* cirrus_logstash::syslog_filters_allow_debug *]
+#   Set this value to true if we do not want to drop DEBUG tagged messages through logstash syslog filters.
 #
 
 class cirrus_logstash (
@@ -45,6 +48,7 @@ class cirrus_logstash (
   $openstack_filters_commit = $cirrus_logstash::params::openstack_filters_commit,
   $openstack_filters_dir = $cirrus_logstash::params::openstack_filters_dir,
   $openstack_filters_allow_debug = $cirrus_logstash::params::openstack_filters_allow_debug,
+  $syslog_filters_allow_debug = $cirrus_logstash::params::syslog_filters_allow_debug,
 ) inherits cirrus_logstash::params
 {
   if ( $cross_site_enabled ) {

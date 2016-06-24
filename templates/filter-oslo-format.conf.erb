@@ -1,0 +1,35 @@
+filter {
+  if "oslo_format" in [fields][tags] {
+    multiline {
+      negate => true
+      pattern => "^%{TIMESTAMP_ISO8601} "
+      what => "previous"
+      stream_identity => "%{host}.%{source}"
+    }
+    multiline {
+      negate => false
+      pattern => "^%{TIMESTAMP_ISO8601}%{SPACE}%{NUMBER}%{SPACE}(TRACE|ERROR)"
+      what => "previous"
+      stream_identity => "%{host}.%{source}"
+    }
+    grok {
+    match => { "message" => "(?m)^%{TIMESTAMP_ISO8601:logdate}%{SPACE}%{NUMBER:pid}?%{SPACE}?(?<loglevel>AUDIT|CRITICAL|DEBUG|INFO|TRACE|WARNING|ERROR) \[?\b%{NOTSPACE:module}\b\]?%{SPACE}?%{GREEDYDATA:logmessage}?" }
+      add_field => { "received_at" => "%{@timestamp}" }
+    }
+    <% if scope.lookupvar('cirrus_logstash::openstack_filters_allow_debug') == true %>
+    # Remove DEBUG logs to reduce the amount of data that needs to be processed.
+    if [loglevel] == "DEBUG" {
+      drop {}
+    }
+    <% end %>
+
+    if ! ("_grokparsefailure" in [tags]) {
+      mutate {
+        remove_tag => [ "beats_input_codec_plain_applied" ]
+        remove_field => [ "offset", "count", "input_type", "beat", "logdate", "[fields][tags]" ]
+        rename => { "host" => "hostname" }
+        rename => { "logmessage" => "message" }
+      }
+    }
+  }
+}

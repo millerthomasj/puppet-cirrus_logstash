@@ -1,0 +1,37 @@
+filter {
+  if "syslog" in [fields][tags] {
+    if "security" in [fields][tags] { mutate { add_tag => [ "security" ] } }
+    if "auth" in [fields][tags] { mutate { add_tag => [ "auth" ] } }
+
+    grok {
+      match => { "message" => "%{SYSLOGTIMESTAMP:syslog_timestamp} %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}(?:\[%{POSINT:syslog_pid}\])?: %{GREEDYDATA:syslog_message}" }
+      add_field => { "received_at" => "%{@timestamp}" }
+    }
+
+    syslog_pri { }
+
+    date {
+      match => [ "syslog_timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
+    }
+    <% if scope.lookupvar('cirrus_logstash::syslog_filters_allow_debug') == true %>
+    # Remove DEBUG logs to reduce the amount of data that needs to be processed.
+    if [loglevel] == "DEBUG" {
+      drop {}
+    }
+    <% end %>
+
+    if ! ("_grokparsefailure" in [tags]) {
+      mutate {
+        add_tag => [ "syslog" ]
+        remove_tag => [ "beats_input_codec_plain_applied" ]
+        remove_field => [ "offset", "count", "input_type", "beat", "syslog_timestamp", "syslog_severity_code", "syslog_facility_code", "host", "[fields][tags]" ]
+        rename => { "syslog_hostname" => "hostname" }
+        rename => { "syslog_program" => "program" }
+        rename => { "syslog_pid" => "pid" }
+        rename => { "syslog_message" => "message" }
+        rename => { "syslog_facility" => "facility" }
+        rename => { "syslog_severity" => "loglevel" }
+      }
+    }
+  }
+}
