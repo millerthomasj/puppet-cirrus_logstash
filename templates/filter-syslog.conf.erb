@@ -13,7 +13,7 @@ filter {
     date {
       match => [ "syslog_timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
     }
-    <% if scope.lookupvar('cirrus_logstash::syslog_filters_allow_debug') == true %>
+    <% if scope.lookupvar('cirrus_logstash::syslog_filters_allow_debug') == false %>
     # Remove DEBUG logs to reduce the amount of data that needs to be processed.
     if [loglevel] == "DEBUG" {
       drop {}
@@ -22,12 +22,14 @@ filter {
 
     if ! ("_grokparsefailure" in [tags]) {
       mutate {
+        lowercase => [ "loglevel" ]
         add_tag => [ "syslog" ]
         remove_tag => [ "beats_input_codec_plain_applied" ]
         remove_field => [ "offset", "count", "input_type", "beat", "syslog_timestamp", "syslog_severity_code", "syslog_facility_code", "host", "[fields][tags]" ]
         rename => { "syslog_hostname" => "hostname" }
         rename => { "syslog_program" => "program" }
         rename => { "syslog_pid" => "pid" }
+        convert => { "pid" => "integer" }
         rename => { "syslog_message" => "message" }
         rename => { "syslog_facility" => "facility" }
         rename => { "syslog_severity" => "loglevel" }

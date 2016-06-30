@@ -4,7 +4,7 @@ filter {
       match => { "message" => "%{TIMESTAMP_ISO8601:logdate}:%{SPACE}%{NUMBER:pid}:%{SPACE}%{LOGLEVEL:loglevel}%{SPACE}:%{SPACE}%{GREEDYDATA:logmessage}" }
       add_field => { "received_at" => "%{@timestamp}" }
     }
-    <% if scope.lookupvar('cirrus_logstash::openstack_filters_allow_debug') == true %>
+    <% if scope.lookupvar('cirrus_logstash::openstack_filters_allow_debug') == false %>
     # Remove DEBUG logs to reduce the amount of data that needs to be processed.
     if [loglevel] == "DEBUG" {
       drop {}
@@ -13,8 +13,10 @@ filter {
 
     if ! ("_grokparsefailure" in [tags]) {
       mutate {
+        lowercase => [ "loglevel" ]
         remove_tag => [ "beats_input_codec_plain_applied" ]
         remove_field => [ "offset", "count", "input_type", "beat", "logdate", "[fields][tags]" ]
+        convert => { "pid" => "integer" }
         rename => { "host" => "hostname" }
         rename => { "logmessage" => "message" }
       }
