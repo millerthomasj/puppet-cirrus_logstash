@@ -38,36 +38,51 @@
 #   is an array of tags. Any other keys:values in the "fields" hash will become searchable fields
 #   in Elasticsearch. This allows you to add custom metadata for all events from a given log file.
 #
-#Exampe Hiera...
-##cirrus_logstash::client::filebeat_prospectors:
-##  var_log_auth_log:
-##    paths:
-##      - /var/log/auth.log
-##    fields:
-##      tags:
-##        - security
-##        - auth
-##        - syslog
-##      my_custom_field: "testing filebeat's custom fields"
-##  var_log_syslog:
-##   paths:
-##      - /var/log/syslog
-##    fields:
-##      tags:
-##        - syslog
-##      my_other_custom_field: "another test of filebeat's custom fields"
+# Example Hiera...
+#   cirrus_logstash::client::filebeat_prospectors:
+#     var_log_auth_log:
+#     paths:
+#       - /var/log/auth.log
+#     fields:
+#       tags:
+#         - security
+#         - auth
+#         - syslog
+#       my_custom_field: "testing filebeat's custom fields"
 #
-
 
 class cirrus_logstash::client (
   $filebeat_enabled     = false,
   $filebeat_prospectors = hiera_hash('filebeat_prospectors', {}),
+  $filebeat_prospectors_ignore_older = '24h',
   $logstash_hosts       = ["${::cirrus_site_iteration}-logstash-001.${::domain}","${::cirrus_site_iteration}-logstash-002.${::domain}"],
-)
+  $logstash_tls_enable  = $cirrus_logstash::params::logstash_tls_enable,
+) inherits cirrus_logstash::params
 {
   if $filebeat_enabled {
     #Include the apt repo for 'beats', so clients can download the filebeat*.deb package
     include ::cirrus::repo::beats
+
+    if $logstash_tls_enable {
+      $logstash_config_output = {
+                                  'logstash' => {
+                                    'hosts' => $logstash_hosts,
+                                    'loadbalance' => true,
+                                    'tls' => {
+                                      'certificate_authorities' => ['/var/lib/puppet/ssl/certs/ca.pem'],
+                                      'certificate' => "/var/lib/puppet/ssl/certs/${::fqdn}.pem",
+                                      'certificate_key' => "/var/lib/puppet/ssl/private_keys/${::fqdn}.pem",
+                                    }
+                                  }
+                                }
+    } else {
+      $logstash_config_output = {
+                                  'logstash' => {
+                                    'hosts' => $logstash_hosts,
+                                    'loadbalance' => true,
+                                  }
+                                }
+    }
 
     class { '::filebeat':
       logging     => {
@@ -82,12 +97,7 @@ class cirrus_logstash::client (
       },
       #Set manage_repo to 'false' as we mirror the 'beats' repo with blobmaster & blobmirror.
       manage_repo => false,
-      outputs     => {
-        'logstash' => {
-          'hosts'       => $logstash_hosts,
-          'loadbalance' => true,
-        },
-      },
+      outputs     => $logstash_config_output,
     }
 
     ### Here we create Prospectors in Filebeat; Prospectors determine how & which logs are monitored.
@@ -99,6 +109,7 @@ class cirrus_logstash::client (
       fields            => {},
       fields_under_root => false,
       close_older       => '1h',
+      ignore_older      => $filebeat_prospectors_ignore_older,
       doc_type          => 'cirrus_log',
       scan_frequency    => '10s',
       tail_files        => false,
@@ -107,11 +118,10 @@ class cirrus_logstash::client (
       max_bytes         => 10485760,
       multiline         => {},
     }
+
     #Set $filebeat_prospectors to an array of hashes in Hiera.
     #Each hash is used as input to the filebeat::prospector define.
     validate_hash($filebeat_prospectors)
     create_resources('filebeat::prospector', $filebeat_prospectors, $filebeat_prospectors_defaults)
-    ###
-
   }
 }

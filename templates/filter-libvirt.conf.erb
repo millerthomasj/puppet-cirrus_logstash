@@ -1,5 +1,5 @@
 filter {
-  if "libvirt" in [tags] {
+  if [type] == "libvirt" {
     grok {
       match => { "message" => "%{TIMESTAMP_ISO8601:logdate}:%{SPACE}%{NUMBER:pid}:%{SPACE}%{LOGLEVEL:loglevel}%{SPACE}:%{SPACE}%{GREEDYDATA:logmessage}" }
       add_field => { "received_at" => "%{@timestamp}" }

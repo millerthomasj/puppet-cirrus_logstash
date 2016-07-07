@@ -1,5 +1,5 @@
 filter {
-  if "syslog" in [fields][tags] {
+  if [type] == "syslog" {
     if "security" in [fields][tags] { mutate { add_tag => [ "security" ] } }
     if "auth" in [fields][tags] { mutate { add_tag => [ "auth" ] } }
 
@@ -23,7 +23,6 @@ filter {
     if ! ("_grokparsefailure" in [tags]) {
       mutate {
         lowercase => [ "loglevel" ]
-        add_tag => [ "syslog" ]
         remove_tag => [ "beats_input_codec_plain_applied" ]
         remove_field => [ "offset", "count", "input_type", "beat", "syslog_timestamp", "syslog_severity_code", "syslog_facility_code", "host", "[fields][tags]" ]
         rename => { "syslog_hostname" => "hostname" }

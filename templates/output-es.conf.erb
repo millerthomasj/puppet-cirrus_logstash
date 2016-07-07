@@ -4,7 +4,7 @@ output {
   }
   else {
     elasticsearch {
-      hosts => ["<%=scope.lookupvar('ipaddress')%>:9200"]
+      hosts => ["localhost:9200"]
       sniffing => true
       manage_template => true
     }

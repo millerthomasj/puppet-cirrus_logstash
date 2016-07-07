@@ -1,5 +1,5 @@
 filter {
-  if "oslo_format" in [fields][tags] {
+  if [type] == "oslo_format" {
     multiline {
       negate => true
       pattern => "^%{TIMESTAMP_ISO8601} "
