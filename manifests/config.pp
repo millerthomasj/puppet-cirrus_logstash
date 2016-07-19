@@ -65,14 +65,19 @@ class cirrus_logstash::config
     order  => 39,
   }
 
+  logstash::configfile { 'filter_ceph_format':
+    template => 'cirrus_logstash/filter-ceph-format.conf.erb',
+    order    => 60,
+  }
+
   logstash::configfile { 'filter_oslo_format':
     template => 'cirrus_logstash/filter-oslo-format.conf.erb',
-    order    => 60,
+    order    => 61,
   }
 
   logstash::configfile { 'filter_libvirt':
     template => 'cirrus_logstash/filter-libvirt.conf.erb',
-    order    => 61,
+    order    => 62,
   }
 
   logstash::configfile { 'output_es':
