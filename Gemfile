@@ -13,6 +13,8 @@ gem 'puppet-lint-leading_zero-check'
 gem 'puppet-lint-numericvariable'
 gem 'puppet-lint-unquoted_string-check'
 
+gem 'json_pure', '< 2.0.0', :require => false
+
 if puppetversion = ENV['PUPPET_GEM_VERSION']
           gem 'puppet', puppetversion, :require => false
 else
