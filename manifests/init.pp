@@ -10,6 +10,9 @@
 # [* $logstash_tls_enable *]
 #   Enable tls for all filebeat -> logstash communications.
 #
+# [* $logstash_allow_days *]
+#   Drop all messages that are older than N days.
+#
 # [* cirrus_logstash::syslog_port *]
 #   The port that all logstash nodes should accept syslog traffic on.
 #
@@ -34,6 +37,7 @@
 class cirrus_logstash (
   $logstash_manage_repo = $cirrus_logstash::params::logstash_manage_repo,
   $logstash_tls_enable = $cirrus_logstash::params::logstash_tls_enable,
+  $logstash_allow_days = $cirrus_logstash::params::logstash_allow_days,
   $syslog_port = $cirrus_logstash::params::syslog_port,
   $filebeat_port = $cirrus_logstash::params::filebeat_port,
   $cross_site_enabled = $cirrus_logstash::params::cross_site_enabled,
@@ -60,5 +64,7 @@ class cirrus_logstash (
     include ::cirrus_logstash::tls
   }
 
-  include ::cirrus_logstash::config
+  class { '::cirrus_logstash::config':
+    allow_days => $logstash_allow_days,
+  }
 }

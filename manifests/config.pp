@@ -1,4 +1,6 @@
-class cirrus_logstash::config
+class cirrus_logstash::config (
+  $allow_days
+)
 {
   logstash::configfile { 'input_syslog':
     template => 'cirrus_logstash/input-syslog.conf.erb',
@@ -8,6 +10,13 @@ class cirrus_logstash::config
   logstash::configfile { 'input_filebeat':
     template => 'cirrus_logstash/input-filebeat.conf.erb',
     order    => 3,
+  }
+
+  $allow_seconds = $allow_days * 60 * 60 * 24
+
+  logstash::configfile { 'filter_datetime':
+    template => 'cirrus_logstash/filter-datetime.conf.erb',
+    order    => 15,
   }
 
   logstash::configfile { 'filter_syslog':
