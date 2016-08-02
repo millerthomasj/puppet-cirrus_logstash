@@ -5,19 +5,19 @@ filter {
       logstash_ts = Time.iso8601(event['received_at'].to_s).to_i;
       event_ts = Time.iso8601(event['@timestamp'].to_s).to_i;
       begin
-        event['logstash_lag'] = logstash_ts - event_ts;
+        event['metrics']['logstash_lag'] = logstash_ts - event_ts;
       rescue Exception => e
-        event['logstash_ruby_exception'] = '[logstash_lag]: ' + e.message
+        event['logstash_ruby_exception'] = '[metrics][logstash_lag]: ' + e.message
       end
     "
   }
 
-  if [logstash_lag] {
-    if [logstash_lag] > <%= scope.lookupvar('cirrus_logstash::config::allow_seconds') %> {
+  if [metrics][logstash_lag] {
+    if [metrics][logstash_lag] > <%= scope.lookupvar('cirrus_logstash::config::allow_seconds') %> {
       drop { }
     } else {
       mutate {
-        convert => { "logstash_lag" => "integer" }
+        convert => { '[metrics][logstash_lag]' => "integer" }
       }
     }
   }

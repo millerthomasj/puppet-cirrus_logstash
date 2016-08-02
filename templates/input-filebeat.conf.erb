@@ -1,12 +1,13 @@
 input {
   beats {
-   port => <%= scope.lookupvar('cirrus_logstash::filebeat_port') %>
-   <% if scope.lookupvar('cirrus_logstash::logstash_tls_enable') == true %>
-   ssl => true
-   ssl_certificate_authorities => ["/var/lib/puppet/ssl/certs/ca.pem"]
-   ssl_certificate => "/var/lib/puppet/ssl/certs/<%= scope.lookupvar('::fqdn') %>.pem"
-   ssl_key => "/var/lib/puppet/ssl/private_keys/<%= scope.lookupvar('::fqdn') %>.pem"
-   ssl_verify_mode => "force_peer"
-   <% end %>
+    port => <%= scope.lookupvar('cirrus_logstash::filebeat_port') %>
+    <% if scope.lookupvar('cirrus_logstash::logstash_tls_enable') == true %>
+    ssl => true
+    ssl_certificate_authorities => ["/var/lib/puppet/ssl/certs/ca.pem"]
+    ssl_certificate => "/var/lib/puppet/ssl/certs/<%= scope.lookupvar('::fqdn') %>.pem"
+    ssl_key => "/var/lib/puppet/ssl/private_keys/<%= scope.lookupvar('::fqdn') %>.pem"
+    ssl_verify_mode => "force_peer"
+    <% end %>
+    add_field => { '[metrics][logstash_host]' => '<%= scope.lookupvar('::fqdn') %>' }
   }
 }
