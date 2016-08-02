@@ -12,13 +12,6 @@ class cirrus_logstash::config (
     order    => 3,
   }
 
-  $allow_seconds = $allow_days * 60 * 60 * 24
-
-  logstash::configfile { 'filter_datetime':
-    template => 'cirrus_logstash/filter-datetime.conf.erb',
-    order    => 15,
-  }
-
   logstash::configfile { 'filter_syslog':
     template => 'cirrus_logstash/filter-syslog.conf.erb',
     order    => 20,
@@ -87,6 +80,13 @@ class cirrus_logstash::config (
   logstash::configfile { 'filter_libvirt':
     template => 'cirrus_logstash/filter-libvirt.conf.erb',
     order    => 62,
+  }
+
+  $allow_seconds = $allow_days * 60 * 60 * 24
+
+  logstash::configfile { 'filter_datetime':
+    template => 'cirrus_logstash/filter-datetime.conf.erb',
+    order    => 80,
   }
 
   logstash::configfile { 'output_es':

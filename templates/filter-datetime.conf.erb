@@ -1,10 +1,24 @@
 filter {
   ruby {
     init => "require 'time'"
-    code => "event['[lag_seconds]'] = Time.now() - event['@timestamp']"
+    code => "
+      logstash_ts = Time.iso8601(event['received_at'].to_s).to_i;
+      event_ts = Time.iso8601(event['@timestamp'].to_s).to_i;
+      begin
+        event['logstash_lag'] = logstash_ts - event_ts;
+      rescue Exception => e
+        event['logstash_ruby_exception'] = '[logstash_lag]: ' + e.message
+      end
+    "
   }
 
-  if [lag_seconds] > <%= scope.lookupvar('cirrus_logstash::config::allow_seconds') %> {
-    drop { }
+  if [logstash_lag] {
+    if [logstash_lag] > <%= scope.lookupvar('cirrus_logstash::config::allow_seconds') %> {
+      drop { }
+    } else {
+      mutate {
+        convert => { "logstash_lag" => "integer" }
+      }
+    }
   }
 }
