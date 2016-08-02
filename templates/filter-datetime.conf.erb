@@ -4,7 +4,7 @@ filter {
     code => "event['[lag_seconds]'] = Time.now() - event['@timestamp']"
   }
 
-  if [lag_seconds] >= <%= scope.lookupvar('cirrus_logstash::config::allow_seconds') %> {
+  if [lag_seconds] > <%= scope.lookupvar('cirrus_logstash::config::allow_seconds') %> {
     drop { }
   }
 }
