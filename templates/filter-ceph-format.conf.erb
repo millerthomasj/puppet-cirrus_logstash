@@ -1,5 +1,7 @@
 filter {
   if [type] == "ceph_format" {
+    mutate { add_tag => [ "openstack" ] }
+
     if "cephmon" in [fields][tags] {
       if "ceph" in [fields][tags] { mutate { add_tag => [ "ceph" ] } }
       if "ceph_audit" in [fields][tags] { mutate { add_tag => [ "ceph_audit" ] } }

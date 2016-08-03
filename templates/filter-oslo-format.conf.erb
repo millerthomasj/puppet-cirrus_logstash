@@ -1,5 +1,7 @@
 filter {
   if [type] == "oslo_format" {
+    mutate { add_tag => [ "openstack" ] }
+
     multiline {
       negate => true
       pattern => "^%{TIMESTAMP_ISO8601} "
