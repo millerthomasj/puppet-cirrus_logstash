@@ -2,28 +2,18 @@ filter {
   if [type] == "ceph_format" {
     mutate { add_tag => [ "openstack" ] }
 
-    if "cephmon" in [fields][tags] {
-      if "ceph" in [fields][tags] { mutate { add_tag => [ "ceph" ] } }
-      if "ceph_audit" in [fields][tags] { mutate { add_tag => [ "ceph_audit" ] } }
-      if "ceph_mon" in [fields][tags] { mutate { add_tag => [ "ceph_mon" ] } }
-      if "ceph_osd" in [fields][tags] { mutate { add_tag => [ "ceph_osd" ] } }
-
-      mutate { add_tag => [ "cephmon" ] }
-    }
-
     if "ceph_mon" in [fields][tags] or "ceph_osd" in [fields][tags] {
       grok {
-        match => { "message" => "^%{TIMESTAMP_ISO8601:logdate}%{SPACE}%{DATA:thread_id}?%{SPACE}%{NUMBER:loglevel}%{SPACE}%{GREEDYDATA:module}${SPACE}:${SPACE}%{GREEDYDATA:logmessage}?" }
+        match => { "message" => "^%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day} %{TIME:time}%{SPACE}%{USERNAME:thread_id}%{SPACE}%{NUMBER:loglevel}%{SPACE}%{GREEDYDATA:logmessage}?" }
+        add_field => { "logdate" => "%{year}-%{month}-%{day} %{time}" }
         add_field => { "received_at" => "%{@timestamp}" }
       }
     } else {
       grok {
-        match => { "message" => "^%{TIMESTAMP_ISO8601:logdate}%{SPACE}%{DATA:mon_name}%{SPACE}%{IP:client}:%{INT:port}/%{INT:loglevel}%{SPACE}%{INT:pid}${SPACE}:${SPACE}%{GREEDYDATA:logmessage}?" }
+        match => { "message" => "^%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day} %{TIME:time}%{SPACE}%{DATA:mon_name}%{SPACE}%{IP:client}:%{INT:port}/%{INT:loglevel}%{SPACE}%{INT:pid}${SPACE}:${SPACE}%{GREEDYDATA:logmessage}?" }
+        add_field => { "logdate" => "%{year}-%{month}-%{day} %{time}" }
         add_field => { "received_at" => "%{@timestamp}" }
       }
-    }
-    date {
-      match => [ "logdate", "YYYY-MM-dd HH:mm:ss.SSS", "ISO8601" ]
     }
     <% if scope.lookupvar('cirrus_logstash::openstack_filters_allow_debug') == false %>
     # Remove DEBUG logs to reduce the amount of data that needs to be processed.
@@ -33,10 +23,26 @@ filter {
     <% end %>
 
     if ! ("_grokparsefailure" in [tags]) {
+      date {
+        match => [ "logdate",
+                   "yyyy-MM-dd HH:mm:ss.SSS",
+                   "yyyy-MM-dd HH:mm:ss.SSSSSS",
+                   "yyyy-MM-dd HH:mm:ss,SSS",
+                   "yyyy-MM-dd HH:mm:ss",
+                   "MMM  d HH:mm:ss",
+                   "MMM dd HH:mm:ss",
+                   "dd/MMM/yyyy:HH:mm:ss Z",
+                   "yyyy-MM-dd HH:mm:ss.SSSZ",
+                   "E MMM dd HH:mm:ss yyyy Z",
+                   "E MMM dd HH:mm:ss yyyy",
+                   "ISO8601"
+                 ]
+        timezone => "UTC"
+      }
       mutate {
         lowercase => [ "loglevel" ]
         remove_tag => [ "beats_input_codec_plain_applied" ]
-        remove_field => [ "offset", "count", "input_type", "beat", "logdate", "[fields][tags]" ]
+        remove_field => [ "offset", "count", "input_type", "beat", "logdate", "[fields][tags]", "year", "month", "day", "time" ]
         convert => { "pid" => "integer" }
         rename => { "host" => "hostname" }
         rename => { "logmessage" => "message" }

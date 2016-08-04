@@ -82,6 +82,11 @@ class cirrus_logstash::config (
     order    => 62,
   }
 
+  logstash::configfile { 'filter_uwsgi_format':
+    template => 'cirrus_logstash/filter-uwsgi-format.conf.erb',
+    order    => 63,
+  }
+
   $allow_seconds = $allow_days * 60 * 60 * 24
 
   logstash::configfile { 'filter_datetime':
