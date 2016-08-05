@@ -2,18 +2,16 @@ filter {
   if [type] == "ceph_format" {
     mutate { add_tag => [ "openstack" ] }
 
-    if "ceph_mon" in [fields][tags] or "ceph_osd" in [fields][tags] {
-      grok {
-        match => { "message" => "^%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day} %{TIME:time}%{SPACE}%{USERNAME:thread_id}%{SPACE}%{NUMBER:loglevel}%{SPACE}%{GREEDYDATA:logmessage}?" }
-        add_field => { "logdate" => "%{year}-%{month}-%{day} %{time}" }
-        add_field => { "received_at" => "%{@timestamp}" }
-      }
-    } else {
-      grok {
-        match => { "message" => "^%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day} %{TIME:time}%{SPACE}%{DATA:mon_name}%{SPACE}%{IP:client}:%{INT:port}/%{INT:loglevel}%{SPACE}%{INT:pid}${SPACE}:${SPACE}%{GREEDYDATA:logmessage}?" }
-        add_field => { "logdate" => "%{year}-%{month}-%{day} %{time}" }
-        add_field => { "received_at" => "%{@timestamp}" }
-      }
+    grok {
+      match => [
+        "message", "^%{TIMESTAMP_ISO8601:logdate} %{DATA:mon_name} %{IP:client}:%{INT:port}/%{INT:loglevel} %{INT:pid} : %{GREEDYDATA:logmessage}?",
+        "message", "^%{TIMESTAMP_ISO8601:logdate} %{DATA:thread_id} %{NUMBER:loglevel} %{DATA:module}\@%{INT:prog_num}\(%{WORD:prog_type}\) %{GREEDYDATA:logmessage}?",
+        "message", "^%{TIMESTAMP_ISO8601:logdate} %{DATA:thread_id} %{NUMBER:loglevel} %{DATA:module}\@%{INT:prog_num}\(%{WORD:prog_type}\).%{DATA} %{GREEDYDATA:logmessage}?",
+        "message", "^%{TIMESTAMP_ISO8601:logdate} %{DATA:thread_id} %{NUMBER:loglevel} %{DATA:module}\@%{INT:prog_num}\(%{WORD:prog_type}\).%{DATA}\(%{INT:data_health}\) %{GREEDYDATA:logmessage}?",
+        "message", "^%{TIMESTAMP_ISO8601:logdate} %{DATA:thread_id} %{NUMBER:loglevel} log_channel\(%{DATA:log_channel}\) %{GREEDYDATA:logmessage}?",
+        "message", "^%{TIMESTAMP_ISO8601:logdate} %{DATA:thread_id} %{NUMBER:loglevel} -- %{GREEDYDATA:logmessage}?"
+      ]
+      add_field => { "received_at" => "%{@timestamp}" }
     }
     <% if scope.lookupvar('cirrus_logstash::openstack_filters_allow_debug') == false %>
     # Remove DEBUG logs to reduce the amount of data that needs to be processed.
