@@ -4,12 +4,18 @@ filter {
     if "auth" in [fields][tags] { mutate { add_tag => [ "auth" ] } }
 
     grok {
-      match => { "message" => "%{SYSLOGTIMESTAMP:syslog_timestamp} %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}(?:\[%{POSINT:syslog_pid}\])?: %{GREEDYDATA:syslog_message}" }
+      match => [
+        "message","%{SYSLOGTIMESTAMP:syslog_timestamp} %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}(?:\[%{POSINT:syslog_pid}\])?: Finished catalog run in %{NUMBER:seconds} seconds",
+        "message","%{SYSLOGTIMESTAMP:syslog_timestamp} %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}(?:\[%{POSINT:syslog_pid}\])?: %{GREEDYDATA:syslog_message}"
+      ]
       add_field => { "received_at" => "%{@timestamp}" }
     }
-
     syslog_pri { }
-
+    if [seconds] =~ /.+/ {
+      mutate {
+        add_field => { "syslog_message" => "Finished catalog run in %{seconds} seconds" }
+      }
+    }
     date {
       match => [ "syslog_timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
     }
@@ -24,7 +30,9 @@ filter {
       mutate {
         lowercase => [ "loglevel" ]
         remove_tag => [ "beats_input_codec_plain_applied" ]
-        remove_field => [ "offset", "count", "input_type", "beat", "syslog_timestamp", "syslog_severity_code", "syslog_facility_code", "host", "[fields][tags]" ]
+        convert => { "seconds" => "float" }
+        rename => { "seconds" => "[metrics][puppet_runtime]" }
+        remove_field => [ "offset", "count", "input_type", "beat", "syslog_timestamp", "syslog_severity_code", "syslog_facility_code", "host", "[fields][tags]", "seconds" ]
         rename => { "syslog_hostname" => "hostname" }
         rename => { "syslog_program" => "program" }
         rename => { "syslog_pid" => "pid" }
