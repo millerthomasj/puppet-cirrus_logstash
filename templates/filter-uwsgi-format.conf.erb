@@ -3,6 +3,7 @@ filter {
     grok {
       match => [
         "message", "^\[pid: %{NUMBER:pid}\|app: %{NUMBER:app}\|req: %{NUMBER:managed_requests}/%{NUMBER:total_requests}\] %{IP:remote_addr} \(\) \{%{NUMBER:cgi_vars} vars in %{NUMBER:cgi_vars_size} bytes\} \[%{DAY:day} %{MONTH:month}  %{MONTHDAY:monthday} %{TIME:time} %{YEAR:year}\] %{GREEDYDATA:logmessage}",
+        "message", "^\[pid: %{NUMBER:pid}\|app: %{NUMBER:app}\|req: %{NUMBER:managed_requests}/%{NUMBER:total_requests}\] %{IP:remote_addr}, %{IP:local_addr} \(\) \{%{NUMBER:cgi_vars} vars in %{NUMBER:cgi_vars_size} bytes\} \[%{DAY:day} %{MONTH:month}  %{MONTHDAY:monthday} %{TIME:time} %{YEAR:year}\] %{GREEDYDATA:logmessage}",
         "message", "^%{TIMESTAMP_ISO8601:logdate}%{SPACE}%{NUMBER:pid}?%{SPACE}?(?<loglevel>AUDIT|CRITICAL|DEBUG|INFO|TRACE|WARNING|ERROR) \[?\b%{NOTSPACE:module}\b\]?%{SPACE}?%{GREEDYDATA:logmessage}?"
       ]
       add_field => { "received_at" => "%{@timestamp}" }
@@ -47,6 +48,13 @@ filter {
         convert => { "pid" => "integer" }
         rename => { "host" => "hostname" }
         rename => { "logmessage" => "message" }
+        rename => { "app" => "[fields][uwsgi][app]" }
+        rename => { "managed_requests" => "[fields][uwsgi][managed_requests]" }
+        rename => { "total_requests" => "[fields][uwsgi][total_requests]" }
+        rename => { "remote_addr" => "[fields][uwsgi][remote_addr]" }
+        rename => { "local_addr" => "[fields][uwsgi][local_addr]" }
+        rename => { "cgi_vars" => "[fields][uwsgi][cgi_vars]" }
+        rename => { "cgi_vars_size" => "[fields][uwsgi][cgi_vars_size]" }
       }
     }
   }

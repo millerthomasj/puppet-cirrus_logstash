@@ -1,7 +1,7 @@
 filter {
   if [type] == "libvirt" {
     grok {
-      match => { "message" => "%{TIMESTAMP_ISO8601:logdate}:%{SPACE}%{NUMBER:pid}:%{SPACE}%{LOGLEVEL:loglevel}%{SPACE}:%{SPACE}%{GREEDYDATA:logmessage}" }
+      match => { "message" => "%{TIMESTAMP_ISO8601:logdate}: %{NUMBER:pid}: %{LOGLEVEL:loglevel} : %{GREEDYDATA:logmessage}" }
       add_field => { "received_at" => "%{@timestamp}" }
     }
     <% if scope.lookupvar('cirrus_logstash::openstack_filters_allow_debug') == false %>

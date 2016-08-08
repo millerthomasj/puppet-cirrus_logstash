@@ -4,14 +4,17 @@ filter {
 
     grok {
       match => [
-        "message", "^%{TIMESTAMP_ISO8601:logdate} %{DATA:mon_name} %{IP:client}:%{INT:port}/%{INT:loglevel} %{INT:pid} : %{GREEDYDATA:logmessage}?",
-        "message", "^%{TIMESTAMP_ISO8601:logdate} %{DATA:thread_id} %{NUMBER:loglevel} %{DATA:module}\@%{INT:prog_num}\(%{WORD:prog_type}\) %{GREEDYDATA:logmessage}?",
-        "message", "^%{TIMESTAMP_ISO8601:logdate} %{DATA:thread_id} %{NUMBER:loglevel} %{DATA:module}\@%{INT:prog_num}\(%{WORD:prog_type}\).%{DATA} %{GREEDYDATA:logmessage}?",
-        "message", "^%{TIMESTAMP_ISO8601:logdate} %{DATA:thread_id} %{NUMBER:loglevel} %{DATA:module}\@%{INT:prog_num}\(%{WORD:prog_type}\).%{DATA}\(%{INT:data_health}\) %{GREEDYDATA:logmessage}?",
-        "message", "^%{TIMESTAMP_ISO8601:logdate} %{DATA:thread_id} %{NUMBER:loglevel} log_channel\(%{DATA:log_channel}\) %{GREEDYDATA:logmessage}?",
-        "message", "^%{TIMESTAMP_ISO8601:logdate} %{DATA:thread_id} %{NUMBER:loglevel} -- %{GREEDYDATA:logmessage}?"
+        "message", "^%{TIMESTAMP_ISO8601:logdate} %{DATA:mon_name} %{IP:client}:%{INT:port}/%{INT:ceph_loglevel} %{INT:pid} : %{GREEDYDATA:logmessage}?",
+        "message", "^%{TIMESTAMP_ISO8601:logdate} %{DATA:thread_id} %{NUMBER:ceph_loglevel} %{DATA:module}\@%{INT:prog_num}\(%{WORD:prog_type}\) %{GREEDYDATA:logmessage}?",
+        "message", "^%{TIMESTAMP_ISO8601:logdate} %{DATA:thread_id} %{NUMBER:ceph_loglevel} %{DATA:module}\@%{INT:prog_num}\(%{WORD:prog_type}\).%{DATA} %{GREEDYDATA:logmessage}?",
+        "message", "^%{TIMESTAMP_ISO8601:logdate} %{DATA:thread_id} %{NUMBER:ceph_loglevel} %{DATA:module}\@%{INT:prog_num}\(%{WORD:prog_type}\).%{DATA}\(%{INT:data_health}\) %{GREEDYDATA:logmessage}?",
+        "message", "^%{TIMESTAMP_ISO8601:logdate} %{DATA:thread_id} %{NUMBER:ceph_loglevel} log_channel\(%{DATA:log_channel}\) %{GREEDYDATA:logmessage}?",
+        "message", "^%{TIMESTAMP_ISO8601:logdate} %{DATA:thread_id} %{NUMBER:ceph_loglevel} -- %{GREEDYDATA:logmessage}?"
       ]
       add_field => { "received_at" => "%{@timestamp}" }
+    }
+    if ! [loglevel] {
+      mutate { add_field => { "loglevel" => "info" } }
     }
     <% if scope.lookupvar('cirrus_logstash::openstack_filters_allow_debug') == false %>
     # Remove DEBUG logs to reduce the amount of data that needs to be processed.
@@ -44,6 +47,15 @@ filter {
         convert => { "pid" => "integer" }
         rename => { "host" => "hostname" }
         rename => { "logmessage" => "message" }
+        rename => { "mon_name" => "[fields][ceph][mon_name]" }
+        rename => { "client" => "[fields][ceph][client]" }
+        rename => { "port" => "[fields][ceph][port]" }
+        rename => { "thread_id" => "[fields][ceph][thread_id]" }
+        rename => { "prog_num" => "[fields][ceph][prog_num]" }
+        rename => { "prog_type" => "[fields][ceph][prog_type]" }
+        rename => { "data_health" => "[fields][ceph][data_health]" }
+        rename => { "log_channel" => "[fields][ceph][log_channel]" }
+        rename => { "ceph_loglevel" => "[fields][ceph][loglevel]" }
       }
     }
   }
