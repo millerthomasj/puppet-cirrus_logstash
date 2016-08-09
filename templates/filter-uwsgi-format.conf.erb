@@ -1,5 +1,11 @@
 filter {
   if [type] == "uwsgi_format" {
+    multiline {
+      negate => false
+      pattern => "^\[uwsgi-http key: %{DATA}:%{NUMBER}"
+      what => "previous"
+      stream_identity => "%{host}.%{source}"
+    }
     grok {
       match => [
         "message", "^\[pid: %{NUMBER:pid}\|app: %{NUMBER:app}\|req: %{NUMBER:managed_requests}/%{NUMBER:total_requests}\] %{IP:remote_addr} \(\) \{%{NUMBER:cgi_vars} vars in %{NUMBER:cgi_vars_size} bytes\} \[%{DAY:day} %{MONTH:month}  %{MONTHDAY:monthday} %{TIME:time} %{YEAR:year}\] %{GREEDYDATA:logmessage}",

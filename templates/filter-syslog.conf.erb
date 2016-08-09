@@ -30,13 +30,13 @@ filter {
       mutate {
         lowercase => [ "loglevel" ]
         remove_tag => [ "beats_input_codec_plain_applied" ]
-        convert => { "seconds" => "float" }
         rename => { "seconds" => "[metrics][puppet_runtime]" }
         remove_field => [ "offset", "count", "input_type", "beat", "syslog_timestamp", "syslog_severity_code", "syslog_facility_code", "host", "[fields][tags]", "seconds" ]
         rename => { "syslog_hostname" => "hostname" }
         rename => { "syslog_program" => "program" }
         rename => { "syslog_pid" => "pid" }
         convert => { "pid" => "integer" }
+        convert => { "[metrics][puppet_runtime]" => "float" }
         rename => { "syslog_message" => "message" }
         rename => { "syslog_facility" => "facility" }
         rename => { "syslog_severity" => "loglevel" }
