@@ -1,0 +1,46 @@
+filter {
+  if [type] == "elasticsearch" {
+    if "es" in [fields][tags] { mutate { add_tag => [ "es" ] } }
+    if "es_master" in [fields][tags] { mutate { add_tag => [ "es_master" ] } }
+    if "es_data" in [fields][tags] { mutate { add_tag => [ "es_data" ] } }
+    if "es_client" in [fields][tags] { mutate { add_tag => [ "es_client" ] } }
+
+    grok {
+      match => { "message" => "\[%{TIMESTAMP_ISO8601:logdate}\]\[%{DATA:loglevel}%{SPACE}\]\[%{DATA:module}%{SPACE}\]%{SPACE}(?<message>(.|\r|\n)*)" }
+      add_field => { "received_at" => "%{@timestamp}" }
+      overwrite => [ "message" ]
+    }
+    <% if scope.lookupvar('cirrus_logstash::openstack_filters_allow_debug') == false %>
+    # Remove DEBUG logs to reduce the amount of data that needs to be processed.
+    if [loglevel] == "DEBUG" {
+      drop {}
+    }
+    <% end %>
+
+    if ! ("_grokparsefailure" in [tags]) {
+      grok {
+        match => [
+          "message", "\[%{DATA:master}\] %{WORD:action} ?[{|\[]{%{DATA:node}}{%{DATA}}{%{IP}}{%{IP}:%{INT}}{%{WORD}=%{WORD:is_data},%{DATA}%{WORD}=%{WORD:is_master}}%{GREEDYDATA:short_message}",
+          "message", "\[%{DATA:master}\] %{WORD:action} {%{DATA:node}}{%{DATA}}{%{IP}}{%{IP}:%{INT}}{%{WORD}=%{WORD:is_data},%{DATA}%{WORD}=%{WORD:is_master}}, %{GREEDYDATA:short_message}",
+          "message", "\[%{DATA:master}\] (?<action>\b\w+\b \b\w+\b) \(reason = %{WORD:reason}\),%{GREEDYDATA:short_message}",
+        ]
+        tag_on_failure => []
+      }
+      date {
+        match => [ "logdate", "yyyy-MM-dd HH:mm:ss,SSS" ]
+        timezone => "UTC"
+      }
+      mutate {
+        lowercase => [ "loglevel" ]
+        remove_tag => [ "beats_input_codec_plain_applied" ]
+        remove_field => [ "offset", "count", "input_type", "beat", "logdate", "[fields][tags]","short_message" ]
+        rename => { "master" => "[fields][es][master]" }
+        rename => { "action" => "[fields][es][action]" }
+        rename => { "node" => "[fields][es][node]" }
+        rename => { "is_data" => "[fields][es][is_data]" }
+        rename => { "is_master" => "[fields][es][is_master]" }
+        rename => { "reason" => "[fields][es][reason]" }
+      }
+    }
+  }
+}

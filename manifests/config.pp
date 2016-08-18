@@ -17,6 +17,11 @@ class cirrus_logstash::config (
     order    => 20,
   }
 
+  logstash::configfile { 'filter_elasticsearch':
+    template => 'cirrus_logstash/filter-elasticsearch.conf.erb',
+    order    => 21,
+  }
+
   logstash::configfile { 'filter_cinder':
     source => 'puppet:///modules/cirrus_logstash/filter-cinder.conf',
     order  => 30,
