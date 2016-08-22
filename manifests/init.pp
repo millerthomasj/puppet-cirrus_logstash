@@ -23,8 +23,7 @@
 #   This will tell this module whether or not to ship logs between the NCE and NCW sites (true or false).
 #
 # [* cirrus_logstash::cross_site_elasticsearch *]
-#   This value should be the DNS names of client nodes in a cross site elasticsearch cluster as an array:
-#   [ "dnvrco02-logstash-001.os.cloud.twc.net:9200", "dnvrc02-logstash-002.os.cloud.twc.net:9200" ]
+#   This value should be either the DNS name or the IP address of a client node in a cross site elasticsearch cluster.
 #
 # === Hiera variables
 #
@@ -42,16 +41,15 @@ class cirrus_logstash (
   $syslog_port = $cirrus_logstash::params::syslog_port,
   $filebeat_port = $cirrus_logstash::params::filebeat_port,
   $cross_site_enabled = $cirrus_logstash::params::cross_site_enabled,
-  $cross_site_elasticsearch = [],
-  $output_stdout = $cirrus_logstash::params::output_stdout,
+  $cross_site_elasticsearch = undef,
   $syslog_filters_allow_debug = $cirrus_logstash::params::syslog_filters_allow_debug,
 ) inherits cirrus_logstash::params
 {
   include ::cirrus::repo::logstash
 
   if ( $cross_site_enabled ) {
-    if ( $cross_site_elasticsearch == [] ) {
-      fail('The cross_site_elasticsearch variable must be set with a valid array of hostnames.')
+    if ( $cross_site_elasticsearch == undef ) {
+      fail('The cross_site_elasticsearch variable must be set with a valid hostname or IP.')
     }
   }
 

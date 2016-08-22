@@ -8,7 +8,6 @@ class cirrus_logstash::params ()
   $filebeat_port = '5044'
 
   $cross_site_enabled = false
-  $output_stdout = false
 
   $openstack_filters_allow_debug = false
   $syslog_filters_allow_debug = false

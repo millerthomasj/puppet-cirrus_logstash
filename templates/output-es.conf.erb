@@ -1,5 +1,5 @@
 output {
-  if "_grokparsefailure" in [tags] or "_rubyexception" in [tags] {
+  if "_grokparsefailure" in [tags] {
     file { path => "/var/log/logstash/failed_events-%{+YYYY-MM-dd}" }
   }
   else {
@@ -10,11 +10,12 @@ output {
     }
     <% if scope.lookupvar('cirrus_logstash::cross_site_enabled') == true %>
     elasticsearch {
-      hosts => <%= scope.lookupvar('cirrus_logstash::cross_site_elasticsearch') %>
+      hosts => ["<%=scope.lookupvar('cirrus_logstash::cross_site_elasticsearch')%>:9200"]
       sniffing => true
       manage_template => true
-    }<% end %>
-    <% if scope.lookupvar('cirrus_logstash::output_stdout') == true %>
-    stdout { codec => rubydebug }<% end %>
+    }
+    <% end %>
+    # Uncomment the following to enable debug logging to /var/log/logstash/logstash.stdout
+    #stdout { codec => rubydebug }
   }
 }
