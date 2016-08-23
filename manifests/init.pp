@@ -56,9 +56,12 @@ class cirrus_logstash (
   }
 
   class { '::logstash':
-    manage_repo  => $logstash_manage_repo,
-    java_install => true,
+    manage_repo       => $logstash_manage_repo,
+    java_install      => true,
+    restart_on_change => false,
   }
+
+  include ::cirrus_logstash::service
 
   logstash::plugin { 'logstash-input-beats': }
 
