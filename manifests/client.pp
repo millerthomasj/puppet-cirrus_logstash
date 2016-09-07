@@ -123,5 +123,7 @@ class cirrus_logstash::client (
     #Each hash is used as input to the filebeat::prospector define.
     validate_hash($filebeat_prospectors)
     create_resources('filebeat::prospector', $filebeat_prospectors, $filebeat_prospectors_defaults)
+
+    Apt::Source['beats'] -> Package['filebeat']
   }
 }
