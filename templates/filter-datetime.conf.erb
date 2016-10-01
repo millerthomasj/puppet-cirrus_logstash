@@ -21,4 +21,8 @@ filter {
       }
     }
   }
+
+  if "_rubyexception" in [tags] {
+    drop {}
+  }
 }

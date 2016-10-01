@@ -92,6 +92,26 @@ class cirrus_logstash::config (
     order    => 63,
   }
 
+  logstash::configfile { 'filter_kafka_format':
+    template => 'cirrus_logstash/filter-kafka-format.conf.erb',
+    order    => 64,
+  }
+
+  logstash::configfile { 'filter_monasca_format':
+    template => 'cirrus_logstash/filter-monasca-format.conf.erb',
+    order    => 65,
+  }
+
+  logstash::configfile { 'filter_storm_format':
+    template => 'cirrus_logstash/filter-storm-format.conf.erb',
+    order    => 66,
+  }
+
+  logstash::configfile { 'filter_swift_format':
+    template => 'cirrus_logstash/filter-swift-format.conf.erb',
+    order    => 67,
+  }
+
   $allow_seconds = $allow_days * 60 * 60 * 24
 
   logstash::configfile { 'filter_datetime':
