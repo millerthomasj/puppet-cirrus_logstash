@@ -8,6 +8,9 @@ input {
     ssl_key => "/var/lib/puppet/ssl/private_keys/<%= scope.lookupvar('::fqdn') %>.pem"
     ssl_verify_mode => "force_peer"
     <% end %>
+
+    congestion_threshold => "40"
+
     add_field => { '[metrics][logstash_host]' => '<%= scope.lookupvar('::fqdn') %>' }
   }
 }
