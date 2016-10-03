@@ -1,6 +1,6 @@
 output {
   if "_grokparsefailure" in [tags] or "_rubyexception" in [tags] {
-    file { path => "/var/log/logstash/failed_events-%{+YYYY-MM-dd}" }
+    file { path => "/var/log/logstash/failed_events.log" }
   }
   else {
     elasticsearch {

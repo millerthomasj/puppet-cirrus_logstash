@@ -1,28 +1,26 @@
 filter {
-  ruby {
-    init => "require 'time'"
-    code => "
-      logstash_ts = Time.iso8601(event['received_at'].to_s).to_i;
-      event_ts = Time.iso8601(event['@timestamp'].to_s).to_i;
-      begin
-        event['metrics']['logstash_lag'] = logstash_ts - event_ts;
-      rescue Exception => e
-        event['logstash_ruby_exception'] = '[metrics][logstash_lag]: ' + e.message
-      end
-    "
-  }
+  if ! ("_grokparsefailure" in [tags]) {
+    ruby {
+      init => "require 'time'"
+      code => "
+        logstash_ts = Time.iso8601(event['received_at'].to_s).to_i;
+        event_ts = Time.iso8601(event['@timestamp'].to_s).to_i;
+        begin
+          event['metrics']['logstash_lag'] = logstash_ts - event_ts;
+        rescue Exception => e
+          event['logstash_ruby_exception'] = '[metrics][logstash_lag]: ' + e.message
+        end
+      "
+    }
 
-  if [metrics][logstash_lag] {
-    if [metrics][logstash_lag] > <%= scope.lookupvar('cirrus_logstash::config::allow_seconds') %> {
-      drop { }
-    } else {
-      mutate {
-        convert => { '[metrics][logstash_lag]' => "integer" }
+    if [metrics][logstash_lag] {
+      if [metrics][logstash_lag] > 86400 {
+        drop { }
+      } else {
+        mutate {
+          convert => { '[metrics][logstash_lag]' => "integer" }
+        }
       }
     }
-  }
-
-  if "_rubyexception" in [tags] {
-    drop {}
   }
 }

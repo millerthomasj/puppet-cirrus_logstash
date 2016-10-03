@@ -5,8 +5,14 @@ filter {
     if "es_data" in [fields][tags] { mutate { add_tag => [ "es_data" ] } }
     if "es_client" in [fields][tags] { mutate { add_tag => [ "es_client" ] } }
 
+    multiline {
+     negate => true
+     pattern => "^\[%{TIMESTAMP_ISO8601}\] "
+     what => "previous"
+     stream_identity => "%{host}.%{source}"
+    }
     grok {
-      match => { "message" => "\[%{TIMESTAMP_ISO8601:logdate}\]\[%{DATA:loglevel}%{SPACE}\]\[%{DATA:module}%{SPACE}\]%{SPACE}(?<message>(.|\r|\n)*)" }
+      match => { "message" => "(?m)\[%{TIMESTAMP_ISO8601:logdate}\]\[%{DATA:loglevel}%{SPACE}\]\[%{DATA:module}%{SPACE}\]%{SPACE}(?<message>(.|\r|\n)*)" }
       add_field => { "received_at" => "%{@timestamp}" }
       overwrite => [ "message" ]
     }

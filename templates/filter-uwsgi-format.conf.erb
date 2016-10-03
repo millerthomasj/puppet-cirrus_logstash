@@ -2,7 +2,13 @@ filter {
   if [type] == "uwsgi_format" {
     multiline {
       negate => false
-      pattern => "^\[uwsgi-http key: %{DATA}:%{NUMBER}"
+      pattern => "^\[uwsgi-http key: "
+      what => "previous"
+      stream_identity => "%{host}.%{source}"
+    }
+    multiline {
+      negate => false
+      pattern => "^\[pid: "
       what => "previous"
       stream_identity => "%{host}.%{source}"
     }
