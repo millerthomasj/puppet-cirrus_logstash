@@ -9,6 +9,12 @@ filter {
       stream_identity => "%{host}.%{source}"
     }
     multiline {
+      negate => true
+      pattern => "^%{TIMESTAMP_ISO8601}%{SPACE}%{NUMBER}%{SPACE}(TRACE|ERROR)%{SPACE}%{NOTSPACE}%{SPACE}\["
+      what => "previous"
+      stream_identity => "%{host}.%{source}"
+    }
+    multiline {
       negate => false
       pattern => "^%{TIMESTAMP_ISO8601}%{SPACE}%{NUMBER}%{SPACE}(TRACE|ERROR)"
       what => "previous"
