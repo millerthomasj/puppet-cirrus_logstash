@@ -34,6 +34,13 @@
 # [* cirrus_logstash::syslog_filters_allow_debug *]
 #   Set this value to true if we do not want to drop DEBUG tagged messages through logstash syslog filters.
 #
+# [* logstash_allow_from_beats_sites *]
+#  This array should contain an element for each cirrus_site_iteration from which you want Logstash to
+#  authenticate Beats clients (e.g. Filebeat) and accept their messages. Since Beats clients must mutually
+#  authenticate Logstash servers, the $beats_allow_to_logstash_sites array must also contain an element
+#  matching the cirrus_site_iteration for each cluster of Logstash servers where Beats messages can be sent.
+#  Defaults to allowing Beats-to-Logstash comms within the same cirrus_site_iteration.
+#
 
 class cirrus_logstash (
   $logstash_manage_repo = $cirrus_logstash::params::logstash_manage_repo,
@@ -45,6 +52,7 @@ class cirrus_logstash (
   $cross_site_elasticsearch = [],
   $output_stdout = $cirrus_logstash::params::output_stdout,
   $syslog_filters_allow_debug = $cirrus_logstash::params::syslog_filters_allow_debug,
+  $logstash_allow_from_beats_sites = hiera_array('logstash_allow_from_beats_sites', $cirrus_logstash::params::logstash_allow_from_beats_sites),
 ) inherits cirrus_logstash::params
 {
   include ::cirrus::repo::logstash

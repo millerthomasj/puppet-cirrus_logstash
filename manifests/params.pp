@@ -12,4 +12,7 @@ class cirrus_logstash::params ()
 
   $openstack_filters_allow_debug = false
   $syslog_filters_allow_debug = false
+
+  $logstash_allow_from_beats_sites = [ $::cirrus_site_iteration ]
+  $beats_allow_to_logstash_sites = [ $::cirrus_site_iteration ]
 }

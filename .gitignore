@@ -16,3 +16,6 @@ tags
 
 ## Ruby
 Gemfile.lock
+
+## .local files (vdev)
+*.local
