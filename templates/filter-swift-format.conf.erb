@@ -1,5 +1,34 @@
 filter {
   if [type] == "swift_format" {
-    drop {}
+    if "swift" in [fields][tags] { mutate { add_tag => [ "swift" ] } }
+    if "swift_object" in [fields][tags] { mutate { add_tag => [ "swift_object" ] } }
+    if "swift_proxy" in [fields][tags] { mutate { add_tag => [ "swift_proxy" ] } }
+
+    grok {
+      match => [
+        "message","^%{SYSLOGTIMESTAMP:logdate} %{WORD:hostname} %{DATA:program}: %{GREEDYDATA:logmessage}"
+      ]
+      add_field => { "received_at" => "%{@timestamp}" }
+    }
+    if ! ("_grokparsefailure" in [tags]) {
+      if ! [loglevel] {
+        mutate { add_field => { "loglevel" => "info" } }
+      }
+      date {
+        match => [ "logdate",
+                   "MMM  d HH:mm:ss",
+                   "MMM dd HH:mm:ss",
+                   "ISO8601"
+                 ]
+        timezone => "UTC"
+      }
+      mutate {
+        lowercase => [ "loglevel" ]
+        remove_tag => [ "beats_input_codec_plain_applied" ]
+        remove_field => [ "offset", "count", "input_type", "beat", "[fields][tags]" ]
+        rename => { "host" => "hostname" }
+        rename => { "logmessage" => "message" }
+      }
+    }
   }
 }

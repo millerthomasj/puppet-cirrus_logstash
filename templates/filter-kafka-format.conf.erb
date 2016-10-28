@@ -1,5 +1,46 @@
 filter {
   if [type] == "kafka_format" {
-    drop {}
+    if "monasca" in [fields][tags] { mutate { add_tag => [ "monasca" ] } }
+    if "kafka" in [fields][tags] { mutate { add_tag => [ "kafka" ] } }
+    if "kafka_controller" in [fields][tags] { mutate { add_tag => [ "kafka_controller" ] } }
+    if "kafka_server" in [fields][tags] { mutate { add_tag => [ "kafka_server" ] } }
+
+    multiline {
+      negate => true
+      pattern => "^\[%{TIMESTAMP_ISO8601}\]"
+      what => "previous"
+      stream_identity => "%{host}.%{source}"
+    }
+    grok {
+      match => [
+        "message","(?m)\[%{TIMESTAMP_ISO8601:logdate}\] %{WORD:loglevel} \[%{DATA:program}\]: %{GREEDYDATA:logmessage}"
+      ]
+      add_field => { "received_at" => "%{@timestamp}" }
+    }
+    if ! ("_grokparsefailure" in [tags]) {
+      date {
+        match => [ "logdate",
+                   "yyyy-MM-dd HH:mm:ss.SSS",
+                   "yyyy-MM-dd HH:mm:ss.SSSSSS",
+                   "yyyy-MM-dd HH:mm:ss,SSS",
+                   "yyyy-MM-dd HH:mm:ss",
+                   "MMM  d HH:mm:ss",
+                   "MMM dd HH:mm:ss",
+                   "dd/MMM/yyyy:HH:mm:ss Z",
+                   "yyyy-MM-dd HH:mm:ss.SSSZ",
+                   "E MMM dd HH:mm:ss yyyy Z",
+                   "E MMM dd HH:mm:ss yyyy",
+                   "ISO8601"
+                 ]
+        timezone => "UTC"
+      }
+      mutate {
+        lowercase => [ "loglevel" ]
+        remove_tag => [ "beats_input_codec_plain_applied" ]
+        remove_field => [ "offset", "count", "input_type", "beat", "[fields][tags]" ]
+        rename => { "host" => "hostname" }
+        rename => { "logmessage" => "message" }
+      }
+    }
   }
 }

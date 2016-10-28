@@ -5,19 +5,10 @@ filter {
 
     grok {
       match => [
-        "message","%{SYSLOGTIMESTAMP:syslog_timestamp} %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}(?:\[%{POSINT:syslog_pid}\])?: Finished catalog run in %{NUMBER:seconds} seconds",
         "message","%{SYSLOGTIMESTAMP:syslog_timestamp} %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}(?:\[%{POSINT:syslog_pid}\])?: %{GREEDYDATA:syslog_message}"
       ]
       add_field => { "received_at" => "%{@timestamp}" }
-    }
-    syslog_pri { }
-    if [seconds] =~ /.+/ {
-      mutate {
-        add_field => { "syslog_message" => "Finished catalog run in %{seconds} seconds" }
-      }
-    }
-    date {
-      match => [ "syslog_timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
+      overwrite => [ "message" ]
     }
     <% if scope.lookupvar('cirrus_logstash::syslog_filters_allow_debug') == false %>
     # Remove DEBUG logs to reduce the amount of data that needs to be processed.
@@ -27,10 +18,26 @@ filter {
     <% end %>
 
     if ! ("_grokparsefailure" in [tags]) {
+      grok {
+        match => [
+          "message", "Finished catalog run in %{NUMBER:seconds} seconds",
+          "message", "%{WORD:ssh_status} user %{DATA:ssh_user} from %{IP:ssh_remote_addr}",
+          "message", "%{WORD:ssh_status} publickey for %{DATA:ssh_user} from %{IP:ssh_remote_addr} %{GREEDYDATA}"
+        ]
+        tag_on_failure => []
+      }
+      syslog_pri { }
+      date {
+        match => [ "syslog_timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
+      }
       mutate {
         lowercase => [ "loglevel" ]
         remove_tag => [ "beats_input_codec_plain_applied" ]
         rename => { "seconds" => "[metrics][puppet_runtime]" }
+        rename => { "ssh_status" => "[fields][sshd][status]" }
+        rename => { "ssh_user" => "[fields][sshd][user]" }
+        rename => { "ssh_remote_addr" => "[fields][sshd][remote_addr]" }
+        lowercase => [ "[fields][sshd][status]" ]
         remove_field => [ "offset", "count", "input_type", "beat", "syslog_timestamp", "syslog_severity_code", "syslog_facility_code", "host", "[fields][tags]", "seconds" ]
         rename => { "syslog_hostname" => "hostname" }
         rename => { "syslog_program" => "program" }
