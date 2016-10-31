@@ -9,6 +9,8 @@ class cirrus_logstash::service
   exec { 'reload_logstash':
     command     => '/usr/sbin/service logstash reload',
     refreshonly => true,
+    timeout     => '120',
+    tries       => '3',
     require     => Exec['start_logstash'],
     onlyif      => [ '/usr/sbin/service logstash status' ],
   }
