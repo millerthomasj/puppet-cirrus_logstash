@@ -1,0 +1,63 @@
+filter {
+  if [type] == "apache_format" {
+    grok {
+      patterns_dir => [ "/etc/logstash/patterns" ]
+      match => [
+        "message", "%{HORIZON_APACHE_ACCESS}",
+        "message", "%{HORIZON_APACHE_ERROR}"
+      ]
+      add_field => { "received_at" => "%{@timestamp}" }
+    }
+    if ! [loglevel] {
+      mutate { add_field => { "loglevel" => "info" } }
+    }
+    <% if scope.lookupvar('cirrus_logstash::openstack_filters_allow_debug') == false %>
+    # Remove DEBUG logs to reduce the amount of data that needs to be processed.
+    if [loglevel] == "DEBUG" {
+      drop {}
+    }
+    <% end %>
+
+    if ! ("_grokparsefailure" in [tags]) {
+      date {
+        match => [ "logdate",
+                   "yyyy-MM-dd HH:mm:ss.SSS",
+                   "yyyy-MM-dd HH:mm:ss.SSSSSS",
+                   "yyyy-MM-dd HH:mm:ss,SSS",
+                   "yyyy-MM-dd HH:mm:ss",
+                   "MMM  d HH:mm:ss",
+                   "MMM dd HH:mm:ss",
+                   "dd/MMM/yyyy:HH:mm:ss Z",
+                   "yyyy-MM-dd HH:mm:ss.SSSZ",
+                   "E MMM dd HH:mm:ss yyyy Z",
+                   "E MMM dd HH:mm:ss yyyy",
+                   "EEE MMM dd HH:mm:ss.SSSSSS yyyy",
+                   "ISO8601"
+                 ]
+        timezone => "UTC"
+      }
+      mutate {
+        lowercase => [ "loglevel" ]
+        rename => { "clientip" => "[fields][apache][clientip]" }
+        rename => { "ident" => "[fields][apache][ident]" }
+        rename => { "auth" => "[fields][apache][auth]" }
+        rename => { "verb" => "[fields][apache][verb]" }
+        rename => { "request" => "[fields][apache][request]" }
+        rename => { "httpversion" => "[fields][apache][httpversion]" }
+        rename => { "rawrequest" => "[fields][apache][rawrequest]" }
+        rename => { "response" => "[fields][apache][response]" }
+        rename => { "bytes" => "[fields][apache][bytes]" }
+        rename => { "clientport" => "[fields][apache][clientport]" }
+        rename => { "referrer" => "[fields][apache][referrer]" }
+        rename => { "agent" => "[fields][apache][agent]" }
+        remove_tag => [ "beats_input_codec_plain_applied" ]
+        remove_field => [ "offset", "count", "input_type", "beat", "logdate", "[fields][tags]" ]
+        convert => { "pid" => "integer" }
+        convert => { "httpversion" => "integer" }
+        convert => { "response" => "integer" }
+        convert => { "bytes" => "integer" }
+        rename => { "logmessage" => "message" }
+      }
+    }
+  }
+}
