@@ -1,0 +1,2 @@
+HORIZON_APACHE_ERROR (?<clientip>%{IPORHOST}|-) (?:%{HTTPDUSER:ident}|-) (?:%{USER:auth}|-) \[%{HTTPDATE:logdate}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-) "%{DATA:referrer}" "%{DATA:agent}"
+HORIZON_APACHE_ACCESS \[%{HTTPDERROR_DATE:logdate}\] \[:%{LOGLEVEL:loglevel}\] \[pid %{POSINT:pid}\]?( \[client %{IPORHOST:clientip}:%{POSINT:clientport}\])? %{GREEDYDATA:logmessage}
