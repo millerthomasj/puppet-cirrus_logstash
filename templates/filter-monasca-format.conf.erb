@@ -3,35 +3,62 @@ filter {
     if "monasca" in [fields][tags] { mutate { add_tag => [ "monasca" ] } }
     if "monasca_api" in [fields][tags] { mutate { add_tag => [ "monasca_api" ] } }
     if "monasca_persister" in [fields][tags] { mutate { add_tag => [ "monasca_persister" ] } }
-    if "monasca_notification" in [fields][tags] { mutate { add_tag => [ "monasca_notification" ] } }
     if "monasca_agent" in [fields][tags] { mutate { add_tag => [ "monasca_agent" ] } }
     if "monasca_collector" in [fields][tags] { mutate { add_tag => [ "monasca_collector" ] } }
     if "monasca_forwarder" in [fields][tags] { mutate { add_tag => [ "monasca_forwarder" ] } }
-    if "monasca_supervisord" in [fields][tags] { mutate { add_tag => [ "monasca_supervisord" ] } }
-    if "grafana" in [fields][tags] { mutate { add_tag => [ "grafana" ] } }
 
-    multiline {
-      negate => true
-      pattern => "^%{WORD} \[%{TIMESTAMP_ISO8601}\]"
-      what => "previous"
-      stream_identity => "%{host}.%{source}"
+    if "monasca_api" in [fields][tags] or "monasca_persister" in [fields][tags] {
+      multiline {
+        negate => true
+        pattern => "^%{WORD} \[%{TIMESTAMP_ISO8601}\]"
+        what => "previous"
+        stream_identity => "%{host}.%{source}"
+      }
+      grok {
+        match => [ "message","(?m)%{WORD:loglevel}%{SPACE}\[%{TIMESTAMP_ISO8601:logdate}\] %{DATA:program}: %{GREEDYDATA:logmessage}" ]
+        add_field => { "received_at" => "%{@timestamp}" }
+      }
     }
-    multiline {
-      negate => true
-      pattern => "^%{TIMESTAMP_ISO8601}"
-      what => "previous"
-      stream_identity => "%{host}.%{source}"
+    if "monasca_notification" in [fields][tags] {
+      mutate { add_tag => [ "monasca_notification" ] }
+      multiline {
+        negate => true
+        pattern => "^%{TIMESTAMP_ISO8601}"
+        what => "previous"
+        stream_identity => "%{host}.%{source}"
+      }
+      grok {
+        match => [ "message","(?m)%{TIMESTAMP_ISO8601:logdate} %{WORD:loglevel} %{DATA:program} %{GREEDYDATA:logmessage}" ]
+        add_field => { "received_at" => "%{@timestamp}" }
+      }
     }
-    grok {
-      match => [
-        "message","(?m)%{WORD:loglevel}%{SPACE}\[%{TIMESTAMP_ISO8601:logdate}\] %{DATA:program}: %{GREEDYDATA:logmessage}",
-        "message","(?m)%{TIMESTAMP_ISO8601:logdate} %{WORD:loglevel} %{DATA:program} %{GREEDYDATA:logmessage}",
-        "message","(?m)%{TIMESTAMP_ISO8601:logdate} %{WORD} \| %{WORD:loglevel} \| %{DATA:program} \| %{GREEDYDATA:module} \| %{GREEDYDATA:logmessage}",
-        "message","t=%{TIMESTAMP_ISO8601:logdate} lvl=%{WORD:loglevel} msg=\"%{GREEDYDATA:logmessage}\" logger=%{WORD:logger} userId=%{NUMBER:userid} orgId=%{NUMBER:orgid} uname= method=%{WORD:method} path=%{DATA:path} status=%{NUMBER:status} remote_addr=%{IP:remote_addr} time_ms=%{DATA:time_ms} size=%{NUMBER:size}",
-        "message","^%{TIMESTAMP_ISO8601:logdate} %{WORD:loglevel} %{GREEDYDATA:logmessage}"
-      ]
-      add_field => { "received_at" => "%{@timestamp}" }
+    if "monasca_collector" in [fields][tags] or "monasca_forwarder" in [fields][tags] {
+      multiline {
+        negate => true
+        pattern => "^%{TIMESTAMP_ISO8601}"
+        what => "previous"
+        stream_identity => "%{host}.%{source}"
+      }
+      grok {
+        match => [ "message","(?m)%{TIMESTAMP_ISO8601:logdate} %{WORD} \| %{WORD:loglevel} \| %{DATA:program} \| %{GREEDYDATA:module} \| %{GREEDYDATA:logmessage}" ]
+        add_field => { "received_at" => "%{@timestamp}" }
+      }
     }
+    if "monasca_supervisord" in [fields][tags] {
+      mutate { add_tag => [ "monasca_supervisord" ] }
+      grok {
+        match => [ "message","^%{TIMESTAMP_ISO8601:logdate} %{WORD:loglevel} %{GREEDYDATA:logmessage}" ]
+        add_field => { "received_at" => "%{@timestamp}" }
+      }
+    }
+    if "grafana" in [fields][tags] {
+      mutate { add_tag => [ "grafana" ] }
+      grok {
+        match => [ "message","t=%{TIMESTAMP_ISO8601:logdate} lvl=%{WORD:loglevel} msg=\"%{GREEDYDATA:logmessage}\" logger=%{WORD:logger} userId=%{NUMBER:userid} orgId=%{NUMBER:orgid} uname= method=%{WORD:method} path=%{DATA:path} status=%{NUMBER:status} remote_addr=%{IP:remote_addr} time_ms=%{DATA:time_ms} size=%{NUMBER:size}" ]
+        add_field => { "received_at" => "%{@timestamp}" }
+      }
+    }
+
     if ! ("_grokparsefailure" in [tags]) {
       date {
         match => [ "logdate",
