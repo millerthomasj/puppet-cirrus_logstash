@@ -8,18 +8,6 @@ filter {
       what => "previous"
       stream_identity => "%{host}.%{source}"
     }
-    multiline {
-      negate => true
-      pattern => "^%{TIMESTAMP_ISO8601}%{SPACE}%{NUMBER}%{SPACE}(TRACE|ERROR)%{SPACE}%{NOTSPACE}%{SPACE}\["
-      what => "previous"
-      stream_identity => "%{host}.%{source}"
-    }
-    multiline {
-      negate => false
-      pattern => "^%{TIMESTAMP_ISO8601}%{SPACE}%{NUMBER}%{SPACE}(TRACE|ERROR)"
-      what => "previous"
-      stream_identity => "%{host}.%{source}"
-    }
     grok {
       match => { "message" => "(?m)^%{TIMESTAMP_ISO8601:logdate}%{SPACE}%{NUMBER:pid}?%{SPACE}?(?<loglevel>AUDIT|CRITICAL|DEBUG|INFO|TRACE|WARNING|ERROR) \[?\b%{NOTSPACE:module}\b\]?%{SPACE}?%{GREEDYDATA:logmessage}?" }
       add_field => { "received_at" => "%{@timestamp}" }
