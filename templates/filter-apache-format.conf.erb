@@ -19,6 +19,12 @@ filter {
     <% end %>
 
     if ! ("_grokparsefailure" in [tags]) {
+      mutate {
+        rename => { "agent" => "[fields][apache][agent]" }
+      }
+      if "a10hm/1.0" in [fields][apache][agent] {
+        drop {}
+      }
       date {
         match => [ "logdate",
                    "yyyy-MM-dd HH:mm:ss.SSS",
@@ -49,7 +55,6 @@ filter {
         rename => { "bytes" => "[fields][apache][bytes]" }
         rename => { "clientport" => "[fields][apache][clientport]" }
         rename => { "referrer" => "[fields][apache][referrer]" }
-        rename => { "agent" => "[fields][apache][agent]" }
         remove_tag => [ "beats_input_codec_plain_applied" ]
         remove_field => [ "offset", "count", "input_type", "beat", "logdate", "[fields][tags]" ]
         convert => { "pid" => "integer" }
