@@ -10,6 +10,9 @@
 # [* $logstash_tls_enable *]
 #   Enable tls for all filebeat -> logstash communications.
 #
+# [* $logstash_tls_dir *]
+#   If tls is enabled, this directory will manage all certificates.
+#
 # [* $logstash_allow_days *]
 #   Drop all messages that are older than N days.
 #
@@ -28,11 +31,14 @@
 #
 # === Hiera variables
 #
-# [* cirrus_logstash::openstack_filters_allow_debug *]
+# [* cirrus_logstash::openstack_allow_debug *]
 #   Set this value to true if we do not want to drop DEBUG tagged messages through logstash openstack filters.
 #
-# [* cirrus_logstash::syslog_filters_allow_debug *]
+# [* cirrus_logstash::syslog_allow_debug *]
 #   Set this value to true if we do not want to drop DEBUG tagged messages through logstash syslog filters.
+#
+# [* cirrus_logstash::elastic_allow_debug *]
+#   Set this value to true if we do not want to drop DEBUG tagged messages through logstash elastic filters.
 #
 # [* logstash_allow_from_beats_sites *]
 #  This array should contain an element for each cirrus_site_iteration from which you want Logstash to
@@ -43,16 +49,19 @@
 #
 
 class cirrus_logstash (
-  $logstash_manage_repo = $cirrus_logstash::params::logstash_manage_repo,
-  $logstash_tls_enable = $cirrus_logstash::params::logstash_tls_enable,
-  $logstash_allow_days = $cirrus_logstash::params::logstash_allow_days,
-  $syslog_port = $cirrus_logstash::params::syslog_port,
-  $filebeat_port = $cirrus_logstash::params::filebeat_port,
-  $cross_site_enabled = $cirrus_logstash::params::cross_site_enabled,
-  $cross_site_elasticsearch = [],
-  $output_stdout = $cirrus_logstash::params::output_stdout,
-  $syslog_filters_allow_debug = $cirrus_logstash::params::syslog_filters_allow_debug,
-  $logstash_allow_from_beats_sites = hiera_array('logstash_allow_from_beats_sites', $cirrus_logstash::params::logstash_allow_from_beats_sites),
+  $logstash_manage_repo               = $cirrus_logstash::params::logstash_manage_repo,
+  $logstash_tls_enable                = $cirrus_logstash::params::logstash_tls_enable,
+  $logstash_tls_dir                   = $cirrus_logstash::params::logstash_tls_dir,
+  $logstash_allow_days                = $cirrus_logstash::params::logstash_allow_days,
+  $syslog_port                        = $cirrus_logstash::params::syslog_port,
+  $filebeat_port                      = $cirrus_logstash::params::filebeat_port,
+  $cross_site_enabled                 = $cirrus_logstash::params::cross_site_enabled,
+  $cross_site_elasticsearch           = [],
+  $output_stdout                      = $cirrus_logstash::params::output_stdout,
+  $openstack_allow_debug              = $cirrus_logstash::params::openstack_allow_debug,
+  $syslog_allow_debug                 = $cirrus_logstash::params::syslog_allow_debug,
+  $elastic_allow_debug                = $cirrus_logstash::params::elastic_allow_debug,
+  $logstash_allow_from_beats_sites    = hiera_array('logstash_allow_from_beats_sites', $cirrus_logstash::params::logstash_allow_from_beats_sites),
 ) inherits cirrus_logstash::params
 {
   include ::cirrus::repo::logstash
@@ -77,7 +86,5 @@ class cirrus_logstash (
     include ::cirrus_logstash::tls
   }
 
-  class { '::cirrus_logstash::config':
-    allow_days => $logstash_allow_days,
-  }
+  include ::cirrus_logstash::config
 }

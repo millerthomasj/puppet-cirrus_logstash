@@ -1,5 +1,22 @@
+# Class cirrus_logstash::config
+#
+# Configure logstash
+#
+
 class cirrus_logstash::config (
-  $allow_days
+  $fqdn                         = $::fqdn,
+  $allow_days                   = $cirrus_logstash::logstash_allow_days,
+  $syslog_port                  = $cirrus_logstash::syslog_port,
+  $filebeat_port                = $cirrus_logstash::filebeat_port,
+  $tls_enable                   = $cirrus_logstash::logstash_tls_enable,
+  $tls_dir                      = $cirrus_logstash::logstash_tls_dir,
+  $ca_allowed_values            = $cirrus_logstash::tls::ca_allowed_values,
+  $openstack_allow_debug        = $cirrus_logstash::openstack_allow_debug,
+  $syslog_allow_debug           = $cirrus_logstash::syslog_allow_debug,
+  $elastic_allow_debug          = $cirrus_logstash::elastic_allow_debug,
+  $output_stdout                = $cirrus_logstash::output_stdout,
+  $cross_site_enabled           = $cirrus_logstash::cross_site_enabled,
+  $cross_site_elasticsearch     = $cirrus_logstash::cross_site_elasticsearch,
 )
 {
   logstash::patternfile { 'horizon_apache_patterns':
@@ -8,23 +25,23 @@ class cirrus_logstash::config (
   }
 
   logstash::configfile { 'input_syslog':
-    template => 'cirrus_logstash/input-syslog.conf.erb',
-    order    => 2,
+    content => template('cirrus_logstash/input-syslog.conf.erb'),
+    order   => 2,
   }
 
   logstash::configfile { 'input_filebeat':
-    template => 'cirrus_logstash/input-filebeat.conf.erb',
-    order    => 3,
+    content => template('cirrus_logstash/input-filebeat.conf.erb'),
+    order   => 3,
   }
 
   logstash::configfile { 'filter_syslog':
-    template => 'cirrus_logstash/filter-syslog.conf.erb',
-    order    => 20,
+    content => template('cirrus_logstash/filter-syslog.conf.erb'),
+    order   => 20,
   }
 
   logstash::configfile { 'filter_elasticsearch':
-    template => 'cirrus_logstash/filter-elasticsearch.conf.erb',
-    order    => 21,
+    content => template('cirrus_logstash/filter-elasticsearch.conf.erb'),
+    order   => 21,
   }
 
   logstash::configfile { 'filter_cinder':
@@ -88,59 +105,59 @@ class cirrus_logstash::config (
   }
 
   logstash::configfile { 'filter_apache_format':
-    template => 'cirrus_logstash/filter-apache-format.conf.erb',
-    order    => 60,
+    content => template('cirrus_logstash/filter-apache-format.conf.erb'),
+    order   => 60,
   }
 
   logstash::configfile { 'filter_ceph_format':
-    template => 'cirrus_logstash/filter-ceph-format.conf.erb',
-    order    => 61,
+    content => template('cirrus_logstash/filter-ceph-format.conf.erb'),
+    order   => 61,
   }
 
   logstash::configfile { 'filter_oslo_format':
-    template => 'cirrus_logstash/filter-oslo-format.conf.erb',
-    order    => 62,
+    content => template('cirrus_logstash/filter-oslo-format.conf.erb'),
+    order   => 62,
   }
 
   logstash::configfile { 'filter_libvirt':
-    template => 'cirrus_logstash/filter-libvirt.conf.erb',
-    order    => 63,
+    content => template('cirrus_logstash/filter-libvirt.conf.erb'),
+    order   => 63,
   }
 
   logstash::configfile { 'filter_uwsgi_format':
-    template => 'cirrus_logstash/filter-uwsgi-format.conf.erb',
-    order    => 64,
+    content => template('cirrus_logstash/filter-uwsgi-format.conf.erb'),
+    order   => 64,
   }
 
   logstash::configfile { 'filter_kafka_format':
-    template => 'cirrus_logstash/filter-kafka-format.conf.erb',
-    order    => 65,
+    content => template('cirrus_logstash/filter-kafka-format.conf.erb'),
+    order   => 65,
   }
 
   logstash::configfile { 'filter_monasca_format':
-    template => 'cirrus_logstash/filter-monasca-format.conf.erb',
-    order    => 66,
+    content => template('cirrus_logstash/filter-monasca-format.conf.erb'),
+    order   => 66,
   }
 
   logstash::configfile { 'filter_storm_format':
-    template => 'cirrus_logstash/filter-storm-format.conf.erb',
-    order    => 67,
+    content => template('cirrus_logstash/filter-storm-format.conf.erb'),
+    order   => 67,
   }
 
   logstash::configfile { 'filter_swift_format':
-    template => 'cirrus_logstash/filter-swift-format.conf.erb',
-    order    => 68,
+    content => template('cirrus_logstash/filter-swift-format.conf.erb'),
+    order   => 68,
   }
 
   $allow_seconds = $allow_days * 60 * 60 * 24
 
   logstash::configfile { 'filter_datetime':
-    template => 'cirrus_logstash/filter-datetime.conf.erb',
-    order    => 80,
+    content => template('cirrus_logstash/filter-datetime.conf.erb'),
+    order   => 80,
   }
 
   logstash::configfile { 'output_es':
-    template => 'cirrus_logstash/output-es.conf.erb',
-    order    => 90,
+    content => template('cirrus_logstash/output-es.conf.erb'),
+    order   => 90,
   }
 }

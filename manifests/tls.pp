@@ -1,24 +1,67 @@
-class cirrus_logstash::tls
+# Class cirrus_logstash::tls
+#
+# Configure logstash security settings
+#
+
+class cirrus_logstash::tls (
+  $ssl_dir = $cirrus_logstash::logstash_tls_dir,
+)
 {
-  user { 'logstash':
-    ensure => present,
-    groups => 'puppet',
+  $cert_dir = "${ssl_dir}/certs"
+  $private_dir = "${ssl_dir}/private_keys"
+
+  File {
+    owner   => 'logstash',
+    group   => 'logstash',
+  }
+
+  file { $ssl_dir:
+    ensure => directory,
+    mode   => '0751',
+  }
+
+  file { $cert_dir:
+    ensure  => directory,
+    mode    => '0755',
+    require => File[$ssl_dir],
+  }
+
+  file { "${cert_dir}/${::fqdn}.pem":
+    ensure  => file,
+    mode    => '0644',
+    source  => "file:///var/lib/puppet/ssl/certs/${::fqdn}.pem",
+    require => File[$cert_dir],
+  }
+
+  file { $private_dir:
+    ensure  => directory,
+    mode    => '0750',
+    owner   => 'logstash',
+    group   => 'logstash',
+    require => File[$ssl_dir],
+  }
+
+  file { "${private_dir}/${::fqdn}.pem":
+    ensure  => file,
+    mode    => '0640',
+    source  => "file:///var/lib/puppet/ssl/private_keys/${::fqdn}.pem",
+    require => File[$private_dir],
   }
 
   $logstash_allow_from_beats_sites = $cirrus_logstash::logstash_allow_from_beats_sites
   validate_array($logstash_allow_from_beats_sites)
 
-  $ca_cert_dir = '/etc/logstash/tls'
-  $ca_options = { bfd01    => "${ca_cert_dir}/ca-bfd01.pem",
-                  bfd02    => "${ca_cert_dir}/ca-bfd02.pem",
-                  chrcnc01 => "${ca_cert_dir}/ca-chrcnc01.pem",
-                  chrcnc02 => "${ca_cert_dir}/ca-chrcnc02.pem",
-                  dev01    => "${ca_cert_dir}/ca-dev01.pem",
-                  dev02    => "${ca_cert_dir}/ca-dev02.pem",
-                  dnvrco01 => "${ca_cert_dir}/ca-dnvrco01.pem",
-                  dnvrco02 => "${ca_cert_dir}/ca-dnvrco02.pem",
-                  hrn01    => "${ca_cert_dir}/ca-hrn01.pem",
-                  hrn02    => "${ca_cert_dir}/ca-hrn02.pem",
+
+  $ca_options = { bfd01    => "${cert_dir}/ca-bfd01.pem",
+                  bfd02    => "${cert_dir}/ca-bfd02.pem",
+                  chrcnc01 => "${cert_dir}/ca-chrcnc01.pem",
+                  chrcnc02 => "${cert_dir}/ca-chrcnc02.pem",
+                  dev01    => "${cert_dir}/ca-dev01.pem",
+                  dev02    => "${cert_dir}/ca-dev02.pem",
+                  dnvrco01 => "${cert_dir}/ca-dnvrco01.pem",
+                  dnvrco02 => "${cert_dir}/ca-dnvrco02.pem",
+                  hrn01    => "${cert_dir}/ca-hrn01.pem",
+                  hrn02    => "${cert_dir}/ca-hrn02.pem",
                   }
   $ca_options_keys = keys($ca_options)
 
@@ -40,23 +83,9 @@ class cirrus_logstash::tls
   # Hiera -- if cross-site Filebeat-to-Logstash comms are not required.
   if (size($ca_allowed) == 0) or ((size($ca_allowed) == 1) and has_key($ca_allowed, $::cirrus_site_iteration)) {
     $ca_allowed_values = [ '/var/lib/puppet/ssl/certs/ca.pem' ]
-
-    file { $ca_cert_dir:
-      ensure => absent,
-      force  => true,
-    }
   }
   else {
     $ca_allowed_values = $_ca_allowed_values
-
-    file { $ca_cert_dir:
-      ensure  => directory,
-      mode    => '0755',
-      owner   => 'root',
-      group   => 'root',
-      purge   => true,
-      recurse => true,
-    }
 
     $ca_allowed.each |$filebeat_site, $ca_cert_path| {
       $ca_cert_string = hiera("ca_cert_${filebeat_site}", undef)

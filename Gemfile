@@ -2,7 +2,7 @@
 source 'https://rubygems.org'
 
 gem 'puppetlabs_spec_helper', :require => false
-gem 'rspec-puppet', '~> 2.3.0', :require => false
+gem 'rspec-puppet', :require => false
 
 gem 'puppet-lint-absolute_classname-check'
 gem 'puppet-lint-absolute_template_path'

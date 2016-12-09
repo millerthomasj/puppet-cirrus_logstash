@@ -16,7 +16,7 @@ filter {
     if ! [loglevel] {
       mutate { add_field => { "loglevel" => "info" } }
     }
-    <% if scope.lookupvar('cirrus_logstash::openstack_filters_allow_debug') == false %>
+    <% if @openstack_allow_debug == false %>
     # Remove DEBUG logs to reduce the amount of data that needs to be processed.
     if [loglevel] == "DEBUG" {
       drop {}

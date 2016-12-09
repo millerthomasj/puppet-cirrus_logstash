@@ -10,7 +10,7 @@ filter {
       add_field => { "received_at" => "%{@timestamp}" }
       overwrite => [ "message" ]
     }
-    <% if scope.lookupvar('cirrus_logstash::syslog_filters_allow_debug') == false %>
+    <% if @syslog_allow_debug == false %>
     # Remove DEBUG logs to reduce the amount of data that needs to be processed.
     if [loglevel] == "DEBUG" {
       drop {}
@@ -21,6 +21,7 @@ filter {
       grok {
         match => [
           "message", "Finished catalog run in %{NUMBER:seconds} seconds",
+          "message", "Applied catalog in %{NUMBER:seconds} seconds",
           "message", "%{WORD:ssh_status} user %{DATA:ssh_user} from %{IP:ssh_remote_addr}",
           "message", "%{WORD:ssh_status} publickey for %{DATA:ssh_user} from %{IP:ssh_remote_addr} %{GREEDYDATA}"
         ]

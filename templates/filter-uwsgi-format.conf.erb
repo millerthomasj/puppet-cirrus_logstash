@@ -1,6 +1,12 @@
 filter {
   if [type] == "uwsgi_format" {
     multiline {
+      negate => false
+      pattern => "%{TIMESTAMP_ISO8601} %{NUMBER} ERROR ldappool"
+      what => "previous"
+      stream_identity => "%{host}.%{source}"
+    }
+    multiline {
       negate => true
       pattern => "(?:^\[pid|^%{TIMESTAMP_ISO8601}|^%{DAY} %{MONTH})"
       what => "previous"
@@ -10,7 +16,7 @@ filter {
       match => [
         "message", "(?m)^\[pid: %{NUMBER:pid}\|app: %{NUMBER:app}\|req: %{NUMBER:managed_requests}/%{NUMBER:total_requests}\] %{IP:remote_addr}, %{IP:local_addr} \(\) \{%{NUMBER:cgi_vars} vars in %{NUMBER:cgi_vars_size} bytes\} \[%{DAY:day} %{MONTH:month}?%{SPACE}?%{MONTHDAY:monthday} %{TIME:time} %{YEAR:year}\] %{GREEDYDATA:logmessage}",
         "message", "(?m)^\[pid: %{NUMBER:pid}\|app: %{NUMBER:app}\|req: %{NUMBER:managed_requests}/%{NUMBER:total_requests}\] %{IP:remote_addr} \(\) \{%{NUMBER:cgi_vars} vars in %{NUMBER:cgi_vars_size} bytes\} \[%{DAY:day} %{MONTH:month}?%{SPACE}?%{MONTHDAY:monthday} %{TIME:time} %{YEAR:year}\] %{GREEDYDATA:logmessage}",
-        "message", "^%{TIMESTAMP_ISO8601:logdate}%{SPACE}%{NUMBER:pid}?%{SPACE}?(?<loglevel>AUDIT|CRITICAL|DEBUG|INFO|TRACE|WARNING|ERROR) \[?\b%{NOTSPACE:module}\b\]?%{SPACE}?%{GREEDYDATA:logmessage}?",
+        "message", "(?m)^%{TIMESTAMP_ISO8601:logdate}%{SPACE}%{NUMBER:pid}?%{SPACE}?(?<loglevel>AUDIT|CRITICAL|DEBUG|INFO|TRACE|WARNING|ERROR) \[?\b%{NOTSPACE:module}\b\]?%{SPACE}?%{GREEDYDATA:logmessage}?",
         "message", "^%{DAY:day} %{MONTH:month}?%{SPACE}?%{MONTHDAY:monthday} %{TIME:time} %{YEAR:year} - %{GREEDYDATA:logmessage}"
       ]
       add_field => { "received_at" => "%{@timestamp}" }
@@ -25,7 +31,7 @@ filter {
     if ! [loglevel] {
       mutate { add_field => { "loglevel" => "info" } }
     }
-    <% if scope.lookupvar('cirrus_logstash::openstack_filters_allow_debug') == false %>
+    <% if @openstack_allow_debug == false %>
     # Remove DEBUG logs to reduce the amount of data that needs to be processed.
     if [loglevel] == "DEBUG" {
       drop {}
@@ -43,9 +49,11 @@ filter {
         }
         if ! ("_grokparsefailure" in [tags]) {
           mutate {
-            remove_field => [ "keystone_request_method", "keystone_request_path", "keystone_forwarded_for" ]
+            remove_field => [ "keystone_forwarded_for" ]
             rename => { "keystone_status" => "[fields][keystone][status]" }
             rename => { "keystone_request_id" => "[fields][keystone][request_id]" }
+            rename => { "keystone_request_method" => "[fields][keystone][request_method]" }
+            rename => { "keystone_request_path" => "[fields][keystone][request_path]" }
             rename => { "keystone_remote_addr" => "[fields][keystone][remote_addr]" }
             rename => { "keystone_user_id" => "[fields][keystone][user_id]" }
             rename => { "keystone_project_id" => "[fields][keystone][project_id]" }

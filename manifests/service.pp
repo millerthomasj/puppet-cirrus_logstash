@@ -1,3 +1,8 @@
+# Class cirrus_logstash::service
+#
+# Configure logstash service for reload
+#
+
 class cirrus_logstash::service
 {
   exec { 'start_logstash':
@@ -7,7 +12,7 @@ class cirrus_logstash::service
   }
 
   exec { 'reload_logstash':
-    command     => '/usr/sbin/service logstash reload',
+    command     => '/usr/sbin/service logstash restart',
     refreshonly => true,
     timeout     => '120',
     tries       => '3',

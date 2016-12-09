@@ -1,12 +1,12 @@
 input {
   tcp {
     type => syslog
-    port => <%= scope.lookupvar('cirrus_logstash::syslog_port') %>
-    add_field => { '[metrics][logstash_host]' => '<%= scope.lookupvar('::fqdn') %>' }
+    port => <%= @syslog_port %>
+    add_field => { '[metrics][logstash_host]' => '<%= @fqdn %>' }
   }
   udp {
     type => syslog
-    port => <%= scope.lookupvar('cirrus_logstash::syslog_port') %>
-    add_field => { '[metrics][logstash_host]' => '<%= scope.lookupvar('::fqdn') %>' }
+    port => <%= @syslog_port %>
+    add_field => { '[metrics][logstash_host]' => '<%= @fqdn %>' }
   }
 }

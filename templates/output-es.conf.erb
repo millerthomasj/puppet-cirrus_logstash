@@ -7,22 +7,14 @@ output {
       hosts => ["localhost:9200"]
       sniffing => true
       manage_template => true
-      <% if scope.lookupvar('cirrus_elasticsearch::xpack_install') == true %>
-      user => "<%= scope.lookupvar('cirrus_elasticsearch::xpack::users::logstash_username') %>"
-      password => "<%= scope.lookupvar('cirrus_elasticsearch::xpack::users::logstash_password') %>"
-      <% end %>
     }
-    <% if scope.lookupvar('cirrus_logstash::cross_site_enabled') == true %>
+    <% if @cross_site_enabled == true %>
     elasticsearch {
-      hosts => <%= scope.lookupvar('cirrus_logstash::cross_site_elasticsearch') %>
+      hosts => <%= @cross_site_elasticsearch %>
       sniffing => true
       manage_template => true
-      <% if scope.lookupvar('cirrus_elasticsearch::xpack_install') == true %>
-      user => "<%= scope.lookupvar('cirrus_elasticsearch::xpack::users::logstash_username') %>"
-      password => "<%= scope.lookupvar('cirrus_elasticsearch::xpack::users::logstash_password') %>"
-      <% end %>
     }<% end %>
-    <% if scope.lookupvar('cirrus_logstash::output_stdout') == true %>
+    <% if @output_stdout == true %>
     stdout { codec => rubydebug }<% end %>
   }
 }
