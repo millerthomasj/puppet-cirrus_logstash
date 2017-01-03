@@ -65,7 +65,7 @@ filter {
             }
           } else {
             mutate {
-              replace => { "[fields][keystone][status]" => "failed" }
+              replace => { "[fields][keystone][status]" => "has_token" }
             }
           }
         }
