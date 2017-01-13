@@ -62,7 +62,7 @@
 #
 
 class cirrus_logstash::client (
-  $filebeat_enabled                  = false,
+  $filebeat_enabled                  = true,
   $filebeat_prospectors              = hiera_hash('filebeat_prospectors', {}),
   $filebeat_prospectors_ignore_older = '24h',
   $logstash_hosts                    = ["${::cirrus_site_iteration}-logstash-001.${::domain}","${::cirrus_site_iteration}-logstash-002.${::domain}"],
