@@ -104,6 +104,11 @@ class cirrus_logstash::config (
     order  => 41,
   }
 
+  logstash::configfile { 'filter_mistral':
+    source => 'puppet:///modules/cirrus_logstash/filter-mistral.conf',
+    order  => 42,
+  }
+
   logstash::configfile { 'filter_apache_format':
     content => template('cirrus_logstash/filter-apache-format.conf.erb'),
     order   => 60,
